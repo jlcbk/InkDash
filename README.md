@@ -1,117 +1,77 @@
 # KindleVibe-Python
 
-A Kindle-friendly dashboard for monitoring Codex usage, written in Python.
+A Kindle-friendly dashboard for monitoring AI coding tool usage, written in Python.
+
+Port of [KindleVibe](https://github.com/lexrus/KindleVibe) (original Go version by lexrus).
 
 ## Features
 
-- **Kindle optimized**: High-contrast, large typography, portrait-friendly layout
-- **Real-time data**: Fetches usage from Codex CLI via JSON-RPC (falls back to session files)
+- **Kindle optimized**: High-contrast, large typography, portrait-friendly layout (e-ink)
+- **Multi-provider**: Codex + GitHub Copilot usage on one dashboard
+- **Segment bars**: 10-segment meters matching the original KindleVibe design
 - **Auto-refresh**: Page refreshes every 5 minutes (configurable)
 - **Web-based settings**: Configure the app directly from the browser
 - **Logging**: Detailed logs for debugging
-- **Simple setup**: No Go required, just Python 3
+- **Modular**: Clean Python modules for each provider
+- **No Go required**: Just Python 3
 
 ## Prerequisites
 
 - Python 3.7 or later
-- Codex CLI installed and authenticated (`npm install -g @openai/codex`)
+- **Codex CLI**: `npm install -g @openai/codex` (optional — only if monitoring Codex)
+- **GitHub Copilot**: Authenticated locally (optional — only if monitoring Copilot)
 
 ## Quick Start
 
-1. **Clone or download this project**
+```bash
+python3 app.py
+```
 
-2. **Run the server**
+Open `http://<your-local-ip>:8080` on your Kindle.
 
-   ```bash
-   python3 app.py
-   ```
+## File Structure
 
-   Or with custom port:
+```
+app.py          # HTTP server and main entry point
+config.py       # Configuration manager (singleton)
+cache.py        # Throttle cache for rate-limited fetches
+codex.py        # Codex usage provider (CLI RPC + session files)
+copilot.py      # Copilot usage provider (GitHub API)
+templates.py    # HTML generation (segment bars, settings page)
+config.json     # User settings
+logs/           # Log output (auto-created)
+```
 
-   ```bash
-   python3 app.py --port 9090
-   ```
+## Providers
 
-3. **Open in Kindle browser**
+### Codex
+- Fetches from `codex app-server` JSON-RPC (preferred)
+- Falls back to `~/.codex/sessions/` files
+- Shows 5-hour and weekly rate-limit usage bars
 
-   Visit: `http://<your-local-ip>:8080`
+### GitHub Copilot
+- Reads token from `config.json` → `COPILOT_API_TOKEN` env → `~/.config/github-copilot/apps.json`
+- Fetches from `api.github.com/copilot_internal/user`
+- Shows Premium and Chat quota bars
 
 ## Configuration
 
-### Config File
-
-Configuration is stored in `config.json` and can be edited:
-- Manually with a text editor
-- Through the web interface (click "Settings" button)
-
-### Config Options
+Web UI at `/settings` or edit `config.json` directly:
 
 ```json
 {
-  "server": {
-    "port": 8080,           // Server port
-    "host": "0.0.0.0"       // Server bind address
-  },
-  "refresh": {
-    "interval_seconds": 300,      // Data refresh interval (30-3600)
-    "auto_refresh_page_ms": 300000  // Page auto-refresh (ms)
-  },
-  "codex": {
-    "enabled": true,              // Enable Codex monitoring
-    "source": "auto",             // "auto", "cli", or "session"
-    "session_file_limit": 10      // Max session files to scan
-  },
-  "display": {
-    "show_credits": true,
-    "show_plan_type": true,
-    "show_data_source": true,
-    "show_last_updated": true
-  }
+  "server": { "port": 8080, "host": "0.0.0.0" },
+  "refresh": { "interval_seconds": 300, "page_refresh_ms": 300000 },
+  "codex": { "enabled": true, "source": "auto", "session_file_limit": 10 },
+  "copilot": { "enabled": true, "token": "" },
+  "display": { "show_credits": true, "show_plan_type": true }
 }
 ```
 
-## Web Interface
+## API
 
-### Dashboard (`/`)
-- Shows Codex usage (5h limit, weekly limit)
-- Displays account info (plan, credits, data source)
-- Settings button in top-right corner
-
-### Settings (`/settings`)
-- Server settings (port, host)
-- Refresh settings (interval, page refresh)
-- Codex settings (enabled, data source, session limit)
-- Display settings (what to show/hide)
-
-### API Endpoints
-- `GET /api/usage` - JSON usage data
-- `GET /api/config` - JSON configuration
-
-## Data Sources
-
-1. **Codex CLI RPC** (preferred): Uses `codex app-server` for real-time data
-2. **Session files** (fallback): Reads from `~/.codex/sessions/` directory
-
-## Logging
-
-Logs are stored in `logs/kindlevibe.log` with detailed information for debugging.
-
-## Troubleshooting
-
-### "codex not found in PATH"
-
-Make sure Codex CLI is installed and in your PATH:
-
-```bash
-npm install -g @openai/codex
-codex --version
-```
-
-### Usage data not updating
-
-- Check `logs/kindlevibe.log` for errors
-- Ensure you have an active Codex subscription
-- Try changing data source to "session" in settings
+- `GET /api/usage` — JSON usage for all providers
+- `GET /api/config` — JSON config dump
 
 ## License
 

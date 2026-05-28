@@ -4,13 +4,17 @@
     "host": "0.0.0.0"
   },
   "refresh": {
-    "interval_seconds": 300,
-    "auto_refresh_page_ms": 300000
+    "interval_seconds": 120,
+    "page_refresh_ms": 120000
   },
   "codex": {
     "enabled": true,
     "source": "auto",
     "session_file_limit": 10
+  },
+  "copilot": {
+    "enabled": true,
+    "token": ""
   },
   "display": {
     "show_credits": false,
