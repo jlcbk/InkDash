@@ -229,6 +229,12 @@ python -m py_compile app.py vibe_update.py
 python -m unittest discover -s tests
 ```
 
+本地可以直接运行同一组检查：
+
+```bash
+make ci
+```
+
 ## 许可证
 
 WTFPL（与原 KindleVibe 保持一致）。
