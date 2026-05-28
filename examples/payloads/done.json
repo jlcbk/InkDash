@@ -1,0 +1,17 @@
+{
+  "state": "已完成",
+  "objective": "收束当前工作并等待下一轮目标",
+  "current_task": "记录结果和验证信息",
+  "next_action": "等待新的需求或下一次定时检查",
+  "participants": [
+    "@scnet_brain",
+    "@opencode"
+  ],
+  "blockers": [],
+  "events": [
+    {
+      "time": "示例",
+      "text": "当前任务已完成。"
+    }
+  ]
+}

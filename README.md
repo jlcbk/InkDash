@@ -162,6 +162,15 @@ python3 vibe_update.py --from-git --cwd /path/to/repo --heartbeat
 python3 vibe_update.py --payload-file vibe_status.example.json --state 等待评审
 ```
 
+仓库内置了几组可复用状态包，可以直接作为自动化脚本模板：
+
+```bash
+python3 vibe_update.py --payload-file examples/payloads/coding.json --from-git
+python3 vibe_update.py --payload-file examples/payloads/review.json --event "本轮改动已交付。"
+python3 vibe_update.py --payload-file examples/payloads/blocked.json --blocker "等待人工确认"
+python3 vibe_update.py --payload-file examples/payloads/done.json
+```
+
 清空已经解决的阻塞项，或清理过长的事件历史：
 
 ```bash

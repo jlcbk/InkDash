@@ -1,0 +1,17 @@
+{
+  "state": "等待评审",
+  "objective": "让协作者检查本轮改动",
+  "current_task": "等待 PR 检查和评审反馈",
+  "next_action": "根据 CI 和评审结果决定合并或修正",
+  "participants": [
+    "@scnet_brain",
+    "@opencode"
+  ],
+  "blockers": [],
+  "events": [
+    {
+      "time": "示例",
+      "text": "本轮改动已交付评审。"
+    }
+  ]
+}
