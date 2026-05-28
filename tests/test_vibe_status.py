@@ -100,6 +100,12 @@ class VibeStatusTests(unittest.TestCase):
         self.assertIn('http-equiv="refresh"', html)
         self.assertNotIn("setTimeout", html)
 
+    def test_settings_html_exposes_stale_threshold(self):
+        html = app.generate_settings_html()
+
+        self.assertIn('name="stale_after_seconds"', html)
+        self.assertIn("状态过期阈值", html)
+
 
 if __name__ == "__main__":
     unittest.main()

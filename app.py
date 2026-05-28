@@ -1253,6 +1253,9 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
     # Refresh settings
     refresh_interval = config.get("refresh", {}).get("interval_seconds", 300)
     refresh_page = config.get("refresh", {}).get("auto_refresh_page_ms", 300000) // 1000
+
+    # Vibe settings
+    stale_after_seconds = config.get("vibe", {}).get("stale_after_seconds", 900)
     
     # Codex settings
     codex_enabled = config.get("codex", {}).get("enabled", True)
@@ -1499,6 +1502,16 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
                 <div class="help-text">最多扫描多少个最近的 Codex 会话文件。</div>
             </div>
         </div>
+
+        <div class="settings-section">
+            <h2>Vibe Coding 设置</h2>
+            
+            <div class="form-group">
+                <label for="stale_after_seconds">状态过期阈值（秒）：</label>
+                <input type="number" id="stale_after_seconds" name="stale_after_seconds" value="{stale_after_seconds}" min="60" max="86400">
+                <div class="help-text">超过这个时间没有状态更新时，看板会提示“可能过期”。</div>
+            </div>
+        </div>
         
         <div class="settings-section">
             <h2>显示设置</h2>
@@ -1658,6 +1671,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if "session_limit" in params:
                     limit = int(params["session_limit"][0])
                     config["codex"]["session_file_limit"] = max(1, min(100, limit))
+
+                # Update vibe settings
+                config.setdefault("vibe", {})
+                if "stale_after_seconds" in params:
+                    stale_after = int(params["stale_after_seconds"][0])
+                    config["vibe"]["stale_after_seconds"] = max(60, min(86400, stale_after))
                 
                 # Update display settings
                 config["display"]["show_plan_type"] = "show_plan_type" in params
