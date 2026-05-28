@@ -136,6 +136,10 @@ make heartbeat
 make health
 make clear-blockers EVENT="阻塞项已解除。"
 make clear-events EVENT="开始新一轮状态记录。"
+make preset-coding EVENT="开始编码。"
+make preset-review EVENT="本轮改动已交付。"
+make preset-blocked BLOCKER="等待人工确认" EVENT="当前被阻塞。"
+make preset-done EVENT="本轮任务已完成。"
 ```
 
 ## 自动化集成
@@ -164,6 +168,15 @@ python3 vibe_update.py --preset coding --from-git
 python3 vibe_update.py --preset review --event "本轮改动已交付。"
 python3 vibe_update.py --preset blocked --blocker "等待人工确认"
 python3 vibe_update.py --preset done
+```
+
+常用 preset 也有 Makefile 快捷命令：
+
+```bash
+make preset-coding EVENT="开始编码。"
+make preset-review EVENT="本轮改动已交付。"
+make preset-blocked BLOCKER="等待人工确认" EVENT="当前被阻塞。"
+make preset-done EVENT="本轮任务已完成。"
 ```
 
 阻塞项解决后，可以显式清空阻塞列表：

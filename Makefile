@@ -1,11 +1,13 @@
-.PHONY: run stop test ci status heartbeat health clear-blockers clear-participants clear-events help
+.PHONY: run stop test ci status heartbeat health clear-blockers clear-participants clear-events preset-coding preset-review preset-blocked preset-done help
 
 # Default port
 PORT ?= 8080
 URL ?= http://localhost:$(PORT)/api/vibe
 PYTHON ?= python3
 EVENT ?=
+BLOCKER ?=
 EVENT_ARG = $(if $(strip $(EVENT)),--event "$(EVENT)",)
+BLOCKER_ARG = $(if $(strip $(BLOCKER)),--blocker "$(BLOCKER)",)
 
 help:
 	@echo "KindleVibe-Python - Kindle 友好的 vibe coding 状态面板"
@@ -21,6 +23,10 @@ help:
 	@echo "  make health          查看服务健康状态"
 	@echo "  make clear-blockers  清空阻塞项，可加 EVENT=\"说明\""
 	@echo "  make clear-events    清空最近事件，可加 EVENT=\"说明\""
+	@echo "  make preset-coding   切换到编码中 preset，并自动读取 Git 上下文"
+	@echo "  make preset-review   切换到等待评审 preset，可加 EVENT=\"说明\""
+	@echo "  make preset-blocked  切换到被阻塞 preset，可加 BLOCKER=\"原因\""
+	@echo "  make preset-done     切换到已完成 preset，可加 EVENT=\"说明\""
 	@echo "  make run PYTHON=/path/to/python3  指定 Python 解释器"
 	@echo ""
 
@@ -62,3 +68,15 @@ clear-participants:
 
 clear-events:
 	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --clear-events $(EVENT_ARG)
+
+preset-coding:
+	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --preset coding --from-git $(EVENT_ARG)
+
+preset-review:
+	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --preset review $(EVENT_ARG)
+
+preset-blocked:
+	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --preset blocked $(BLOCKER_ARG) $(EVENT_ARG)
+
+preset-done:
+	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --preset done $(EVENT_ARG)

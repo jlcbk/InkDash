@@ -19,7 +19,7 @@
 - `vibe_update.py --preset` 可以直接读取内置状态包模板。
 - 主页面使用 `meta refresh` 自动刷新，不依赖 JavaScript。
 - 主页面、设置页、纯文本页和 API 统一 no-cache 响应头。
-- Makefile 快捷命令：`make status`、`make heartbeat`、`make health`、`make clear-blockers`、`make clear-events`、`make ci`。
+- Makefile 快捷命令：`make status`、`make heartbeat`、`make health`、`make clear-blockers`、`make clear-events`、`make preset-coding`、`make preset-review`、`make preset-blocked`、`make preset-done`、`make ci`。
 - GitHub Actions CI，自动运行 py_compile 和 unittest。
 - 中文使用指南、安全说明、systemd user service 示例、macOS launchd 示例。
 - 中文贡献指南，固定本地开发、验证、兼容性和 PR 交接要求。

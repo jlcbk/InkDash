@@ -130,6 +130,10 @@ make heartbeat
 make health
 make clear-blockers EVENT="阻塞项已解除。"
 make clear-events EVENT="开始新一轮状态记录。"
+make preset-coding EVENT="开始编码。"
+make preset-review EVENT="本轮改动已交付。"
+make preset-blocked BLOCKER="等待人工确认" EVENT="当前被阻塞。"
+make preset-done EVENT="本轮任务已完成。"
 ```
 
 如果系统里的 Python 命令不是 `python3`，可以覆盖 Makefile 变量：
@@ -178,6 +182,15 @@ python3 vibe_update.py --preset coding --from-git
 python3 vibe_update.py --preset review --event "本轮改动已交付。"
 python3 vibe_update.py --preset blocked --blocker "等待人工确认"
 python3 vibe_update.py --preset done
+```
+
+对应的 Makefile 快捷命令：
+
+```bash
+make preset-coding EVENT="开始编码。"
+make preset-review EVENT="本轮改动已交付。"
+make preset-blocked BLOCKER="等待人工确认" EVENT="当前被阻塞。"
+make preset-done EVENT="本轮任务已完成。"
 ```
 
 清空已经解决的阻塞项，或清理过长的事件历史：
