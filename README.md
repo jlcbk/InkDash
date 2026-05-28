@@ -64,6 +64,33 @@ curl -X POST http://localhost:8080/api/vibe \
 curl http://localhost:8080/api/vibe
 ```
 
+也可以使用随项目提供的标准库 CLI 工具，避免每次手写 curl：
+
+```bash
+python3 vibe_update.py \
+  --state 编码中 \
+  --project KindleVibe-Python \
+  --branch feature/vibe-board \
+  --objective "把 Kindle 变成 vibe coding 常亮状态屏" \
+  --current-task "补充 CLI 状态写入工具" \
+  --next-action "运行测试并交给 GitHub 协作 agent 发 PR" \
+  --participant @scnet_brain \
+  --participant @opencode \
+  --event "CLI 已经能写入状态。"
+```
+
+只读取并输出中文摘要：
+
+```bash
+python3 vibe_update.py
+```
+
+输出完整 JSON：
+
+```bash
+python3 vibe_update.py --json
+```
+
 字段说明：
 
 | 字段 | 说明 |
