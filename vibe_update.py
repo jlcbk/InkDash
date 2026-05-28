@@ -98,6 +98,11 @@ def parse_args(argv=None):
         choices=PRESET_NAMES,
         help="读取内置状态包：coding、review、blocked、done"
     )
+    parser.add_argument(
+        "--list-presets",
+        action="store_true",
+        help="列出内置状态包；配合 --json 可输出机器可读格式"
+    )
     parser.add_argument("--timeout", type=float, default=5.0, help="请求超时时间")
     parser.add_argument(
         "--from-git",
@@ -172,6 +177,29 @@ def load_preset_payload(name: Optional[str]) -> Dict[str, Any]:
     if not name:
         return {}
     return load_payload_file(str(PRESET_DIR / f"{name}.json"))
+
+
+def list_presets() -> list:
+    presets = []
+    for name in PRESET_NAMES:
+        payload = load_preset_payload(name)
+        presets.append({
+            "name": name,
+            "state": payload.get("state", ""),
+            "current_task": payload.get("current_task", ""),
+            "next_action": payload.get("next_action", ""),
+        })
+    return presets
+
+
+def format_preset_list(presets: list) -> str:
+    lines = ["可用 preset："]
+    for preset in presets:
+        lines.append(
+            f"- {preset['name']}：{preset['state']}；"
+            f"{preset['current_task']}；下一步：{preset['next_action']}"
+        )
+    return "\n".join(lines)
 
 
 def build_payload(args) -> Dict[str, Any]:
@@ -297,6 +325,14 @@ def format_health_summary(health: Dict[str, Any]) -> str:
 
 def main(argv=None) -> int:
     args = parse_args(argv)
+    if args.list_presets:
+        presets = list_presets()
+        if args.json:
+            print(json.dumps(presets, indent=2, ensure_ascii=False))
+        else:
+            print(format_preset_list(presets))
+        return 0
+
     if args.health:
         try:
             health = request_vibe(derive_health_url(args.url), None, args.timeout, args.token)

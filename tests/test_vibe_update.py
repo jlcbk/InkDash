@@ -121,6 +121,15 @@ class VibeUpdateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "--preset"):
             vibe_update.build_payload(args)
 
+    def test_list_presets_returns_summaries(self):
+        presets = vibe_update.list_presets()
+        names = {preset["name"] for preset in presets}
+        summary = vibe_update.format_preset_list(presets)
+
+        self.assertEqual(names, set(vibe_update.PRESET_NAMES))
+        self.assertIn("coding", summary)
+        self.assertIn("下一步", summary)
+
     def test_clear_flags_build_empty_lists(self):
         args = vibe_update.parse_args([
             "--clear-blockers",

@@ -17,6 +17,7 @@
 - `vibe_update.py` 支持显式清空阻塞项、参与者和最近事件。
 - `examples/payloads/` 提供编码中、等待评审、被阻塞和已完成状态包模板。
 - `vibe_update.py --preset` 可以直接读取内置状态包模板。
+- `vibe_update.py --list-presets` 可以列出内置状态包模板摘要。
 - 主页面使用 `meta refresh` 自动刷新，不依赖 JavaScript。
 - 主页面、设置页、纯文本页和 API 统一 no-cache 响应头。
 - Makefile 快捷命令：`make status`、`make heartbeat`、`make health`、`make clear-blockers`、`make clear-events`、`make preset-coding`、`make preset-review`、`make preset-blocked`、`make preset-done`、`make ci`。
