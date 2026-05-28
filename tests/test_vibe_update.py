@@ -103,6 +103,35 @@ class VibeUpdateTests(unittest.TestCase):
 
         self.assertEqual(args.url, "http://kindle.local/api/vibe")
 
+    def test_derive_health_url_from_vibe_url(self):
+        self.assertEqual(
+            vibe_update.derive_health_url("http://localhost:8080/api/vibe"),
+            "http://localhost:8080/api/health",
+        )
+        self.assertEqual(
+            vibe_update.derive_health_url("http://localhost:8080"),
+            "http://localhost:8080/api/health",
+        )
+
+    def test_format_health_summary(self):
+        summary = vibe_update.format_health_summary({
+            "status": "ok",
+            "checked_at": "2026-05-29 02:20:00",
+            "vibe": {
+                "state": "运行中",
+                "stale": False,
+                "updated_at": "2026-05-29 02:19:00",
+            },
+            "codex": {
+                "source": "session",
+                "error": "",
+            },
+        })
+
+        self.assertIn("服务：ok", summary)
+        self.assertIn("Vibe 心跳：正常", summary)
+        self.assertIn("Codex 数据来源：session", summary)
+
 
 if __name__ == "__main__":
     unittest.main()

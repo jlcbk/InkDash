@@ -101,6 +101,12 @@ python3 vibe_update.py
 python3 vibe_update.py --json
 ```
 
+查看服务健康状态：
+
+```bash
+python3 vibe_update.py --health
+```
+
 只刷新心跳，不改变当前任务内容：
 
 ```bash
