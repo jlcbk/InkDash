@@ -43,6 +43,8 @@ http://<你的局域网 IP>:8080
 
 局域网部署和写入 token 的安全边界见 [SECURITY.md](SECURITY.md)。
 
+主要功能变更见 [CHANGELOG.md](CHANGELOG.md)。
+
 ## 更新 Vibe Coding 状态
 
 看板状态保存在本地 `vibe_status.json`，该文件属于运行时状态，不提交到 Git。可以参考 `vibe_status.example.json` 的结构。
