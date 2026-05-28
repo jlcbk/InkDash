@@ -1123,6 +1123,61 @@ def generate_main_html(usage: CodexUsage, vibe_status: Dict[str, Any]) -> str:
     return html
 
 
+def generate_status_text(usage: CodexUsage, vibe_status: Dict[str, Any]) -> str:
+    """Generate a plain-text fallback view for old Kindle browsers and scripts."""
+    def text(value: Any, fallback: str = "未指定") -> str:
+        value = str(value).strip() if value is not None else ""
+        return value if value else fallback
+
+    def percent(value: int) -> str:
+        if value < 0:
+            return "未知"
+        return f"{max(0, min(100, value))}%"
+
+    blockers = _as_text_list(vibe_status.get("blockers"))
+    participants = _as_text_list(vibe_status.get("participants"))
+    events = _as_event_list(vibe_status.get("events"))
+
+    lines = [
+        "KindleVibe",
+        "=" * 20,
+        f"状态：{text(vibe_status.get('state'), '待更新')}",
+        f"目标：{text(vibe_status.get('objective'))}",
+        f"项目：{text(vibe_status.get('project'))}",
+        f"分支：{text(vibe_status.get('branch'))}",
+        f"当前任务：{text(vibe_status.get('current_task'))}",
+        f"下一步：{text(vibe_status.get('next_action'))}",
+        f"参与者：{', '.join(participants) if participants else '未指定'}",
+        f"阻塞项：{', '.join(blockers) if blockers else '无'}",
+        f"更新时间：{text(vibe_status.get('updated_at'), '未知')}",
+        "",
+        "最近事件：",
+    ]
+
+    if events:
+        lines.extend(
+            f"- {text(event.get('time'), '未知')} {text(event.get('text'), '')}"
+            for event in events[-MAX_EVENT_ITEMS:]
+            if isinstance(event, dict)
+        )
+    else:
+        lines.append("- 暂无")
+
+    lines.extend([
+        "",
+        "Codex 用量：",
+        f"- 5 小时额度剩余：{percent(usage.five_hour_percent_left)}，重置：{text(usage.five_hour_reset, '未知')}",
+        f"- 周额度剩余：{percent(usage.weekly_percent_left)}，重置：{text(usage.weekly_reset, '未知')}",
+        f"- 数据来源：{text(usage.source, '未知')}",
+        f"- 用量更新时间：{text(usage.last_updated, '未知')}",
+    ])
+
+    if usage.error:
+        lines.extend(["", f"提示：{usage.error}"])
+
+    return "\n".join(lines) + "\n"
+
+
 def generate_settings_html(message: str = "", message_type: str = "") -> str:
     """Generate settings page HTML."""
     msg_html = ""
@@ -1461,6 +1516,17 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
             self.wfile.write(html.encode("utf-8"))
+
+        elif path == "/status.txt":
+            with cache_lock:
+                usage = usage_cache
+
+            status_text = generate_status_text(usage, load_vibe_status())
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(status_text.encode("utf-8"))
         
         elif path == "/api/usage":
             with cache_lock:

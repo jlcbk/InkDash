@@ -54,6 +54,28 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(len(status["events"]), app.MAX_EVENT_ITEMS)
         self.assertEqual(status["events"][0]["text"], "事件 3")
 
+    def test_generate_status_text_contains_vibe_and_usage_summary(self):
+        usage = app.CodexUsage()
+        usage.five_hour_percent_left = 72
+        usage.weekly_percent_left = 88
+        usage.source = "session"
+        usage.last_updated = "2026-05-29 01:30:00"
+        status = app.normalize_vibe_status({
+            "state": "测试中",
+            "project": "KindleVibe-Python",
+            "branch": "status-text",
+            "objective": "提供纯文本兜底视图",
+            "events": [{"time": "01:30", "text": "生成 status.txt"}],
+        })
+
+        text = app.generate_status_text(usage, status)
+
+        self.assertIn("状态：测试中", text)
+        self.assertIn("目标：提供纯文本兜底视图", text)
+        self.assertIn("分支：status-text", text)
+        self.assertIn("5 小时额度剩余：72%", text)
+        self.assertIn("- 01:30 生成 status.txt", text)
+
 
 if __name__ == "__main__":
     unittest.main()
