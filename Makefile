@@ -1,9 +1,11 @@
-.PHONY: run stop test ci status heartbeat health help
+.PHONY: run stop test ci status heartbeat health clear-blockers clear-participants clear-events help
 
 # Default port
 PORT ?= 8080
 URL ?= http://localhost:$(PORT)/api/vibe
 PYTHON ?= python3
+EVENT ?=
+EVENT_ARG = $(if $(strip $(EVENT)),--event "$(EVENT)",)
 
 help:
 	@echo "KindleVibe-Python - Kindle 友好的 vibe coding 状态面板"
@@ -17,6 +19,8 @@ help:
 	@echo "  make status          读取当前 Vibe 状态"
 	@echo "  make heartbeat       刷新当前 Vibe 状态心跳"
 	@echo "  make health          查看服务健康状态"
+	@echo "  make clear-blockers  清空阻塞项，可加 EVENT=\"说明\""
+	@echo "  make clear-events    清空最近事件，可加 EVENT=\"说明\""
 	@echo "  make run PYTHON=/path/to/python3  指定 Python 解释器"
 	@echo ""
 
@@ -49,3 +53,12 @@ heartbeat:
 
 health:
 	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --health
+
+clear-blockers:
+	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --clear-blockers $(EVENT_ARG)
+
+clear-participants:
+	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --clear-participants $(EVENT_ARG)
+
+clear-events:
+	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --clear-events $(EVENT_ARG)

@@ -134,6 +134,8 @@ python3 vibe_update.py --heartbeat
 make status
 make heartbeat
 make health
+make clear-blockers EVENT="阻塞项已解除。"
+make clear-events EVENT="开始新一轮状态记录。"
 ```
 
 ## 自动化集成
@@ -156,6 +158,13 @@ python3 vibe_update.py --clear-blockers --event "阻塞项已解除。"
 
 ```bash
 python3 vibe_update.py --clear-events --event "开始新一轮状态记录。"
+```
+
+也可以用 Makefile 快捷命令完成同样操作：
+
+```bash
+make clear-blockers EVENT="阻塞项已解除。"
+make clear-events EVENT="开始新一轮状态记录。"
 ```
 
 健康检查：
