@@ -10,6 +10,7 @@ KindleVibe-Python 是一个面向 Kindle 浏览器的常亮状态面板，用来
 - **Vibe Coding 看板**：展示当前目标、任务、下一步、协作者、阻塞项和最近事件。
 - **状态写入 API**：任意 agent、脚本或自动化流程都可以通过 `POST /api/vibe` 更新看板。
 - **纯文本兜底页**：`/status.txt` 提供不依赖 CSS/JS 的状态摘要，适合旧 Kindle 浏览器、终端和监控脚本。
+- **心跳/过期提示**：当状态长时间没有更新时，页面和纯文本端点会提示“可能过期”。
 - **Codex 用量监控**：优先通过 Codex CLI RPC 读取用量，失败后回退到本地会话文件。
 - **自动刷新**：Kindle 页面按配置周期自动刷新，不依赖复杂前端框架。
 - **浏览器设置页**：可以在 `/settings` 中调整端口、刷新间隔、Codex 来源和显示内容。
@@ -92,6 +93,12 @@ python3 vibe_update.py
 python3 vibe_update.py --json
 ```
 
+只刷新心跳，不改变当前任务内容：
+
+```bash
+python3 vibe_update.py --heartbeat
+```
+
 字段说明：
 
 | 字段 | 说明 |
@@ -126,6 +133,9 @@ python3 vibe_update.py --json
     "enabled": true,
     "source": "auto",
     "session_file_limit": 10
+  },
+  "vibe": {
+    "stale_after_seconds": 900
   },
   "display": {
     "show_vibe_board": true,

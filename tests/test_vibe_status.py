@@ -2,6 +2,7 @@ import json
 import sys
 import tempfile
 import unittest
+from datetime import datetime
 from pathlib import Path
 
 
@@ -75,6 +76,20 @@ class VibeStatusTests(unittest.TestCase):
         self.assertIn("分支：status-text", text)
         self.assertIn("5 小时额度剩余：72%", text)
         self.assertIn("- 01:30 生成 status.txt", text)
+
+    def test_stale_status_detection(self):
+        status = app.normalize_vibe_status({
+            "updated_at": "2026-05-29 01:00:00",
+        })
+
+        self.assertFalse(app.is_vibe_status_stale(
+            status,
+            now=datetime(2026, 5, 29, 1, 10, 0)
+        ))
+        self.assertTrue(app.is_vibe_status_stale(
+            status,
+            now=datetime(2026, 5, 29, 1, 20, 1)
+        ))
 
 
 if __name__ == "__main__":

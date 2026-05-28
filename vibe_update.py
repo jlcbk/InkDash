@@ -38,6 +38,11 @@ def parse_args(argv=None):
     )
     parser.add_argument("--event", help="追加一条最近事件")
     parser.add_argument(
+        "--heartbeat",
+        action="store_true",
+        help="只刷新更新时间，用来表示当前状态仍然有效"
+    )
+    parser.add_argument(
         "--json",
         action="store_true",
         help="输出完整 JSON，而不是中文摘要"
@@ -75,6 +80,8 @@ def build_payload(args) -> Dict[str, Any]:
         payload["participants"] = clean_list(args.participant)
     if args.blocker is not None:
         payload["blockers"] = clean_list(args.blocker)
+    if args.heartbeat:
+        payload["heartbeat"] = True
 
     return payload
 
