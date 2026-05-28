@@ -280,9 +280,7 @@ def normalize_vibe_status(raw: Any) -> Dict[str, Any]:
             status[field] = _as_text_list(raw.get(field))
 
     if "events" in raw:
-        events = _as_event_list(raw.get("events"))
-        if events:
-            status["events"] = events
+        status["events"] = _as_event_list(raw.get("events"))
 
     return status
 
@@ -334,9 +332,7 @@ def update_vibe_status(patch: Dict[str, Any]) -> Dict[str, Any]:
             status[field] = _as_text_list(patch.get(field))
 
     if "events" in patch:
-        events = _as_event_list(patch.get("events"))
-        if events:
-            status["events"] = events
+        status["events"] = _as_event_list(patch.get("events"))
 
     event_text = _as_clean_text(patch.get("event"))
     if event_text:

@@ -55,6 +55,17 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(len(status["events"]), app.MAX_EVENT_ITEMS)
         self.assertEqual(status["events"][0]["text"], "事件 3")
 
+    def test_update_vibe_status_can_clear_events(self):
+        app.update_vibe_status({
+            "event": "先记录一条事件。"
+        })
+
+        status = app.update_vibe_status({
+            "events": []
+        })
+
+        self.assertEqual(status["events"], [])
+
     def test_generate_status_text_contains_vibe_and_usage_summary(self):
         usage = app.CodexUsage()
         usage.five_hour_percent_left = 72

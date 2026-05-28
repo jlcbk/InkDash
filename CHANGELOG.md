@@ -14,6 +14,7 @@
 - 心跳/过期提示，并支持在设置页调整过期阈值。
 - 可选 `security.api_token` 写入鉴权。
 - `GET /api/config` 对已配置 token 脱敏。
+- `vibe_update.py` 支持显式清空阻塞项、参与者和最近事件。
 - 主页面使用 `meta refresh` 自动刷新，不依赖 JavaScript。
 - 主页面、设置页、纯文本页和 API 统一 no-cache 响应头。
 - Makefile 快捷命令：`make status`、`make heartbeat`、`make health`、`make ci`。

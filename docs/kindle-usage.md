@@ -146,6 +146,18 @@ python3 vibe_update.py --payload-file status.json --event "自动化任务完成
 
 `status.json` 可以参考仓库里的 `vibe_status.example.json`。
 
+阻塞项解决后，可以显式清空阻塞列表：
+
+```bash
+python3 vibe_update.py --clear-blockers --event "阻塞项已解除。"
+```
+
+如果最近事件已经太长，开始新一轮工作时可以清空历史并保留一条新事件：
+
+```bash
+python3 vibe_update.py --clear-events --event "开始新一轮状态记录。"
+```
+
 健康检查：
 
 ```bash

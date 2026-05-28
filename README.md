@@ -160,6 +160,13 @@ python3 vibe_update.py --from-git --cwd /path/to/repo --heartbeat
 python3 vibe_update.py --payload-file vibe_status.example.json --state 等待评审
 ```
 
+清空已经解决的阻塞项，或清理过长的事件历史：
+
+```bash
+python3 vibe_update.py --clear-blockers --event "阻塞项已解除。"
+python3 vibe_update.py --clear-events --event "开始新一轮状态记录。"
+```
+
 字段说明：
 
 | 字段 | 说明 |
@@ -174,7 +181,7 @@ python3 vibe_update.py --payload-file vibe_status.example.json --state 等待评
 | `blockers` | 阻塞项列表 |
 | `participants` | 参与者列表 |
 | `event` | 追加一条最近事件 |
-| `events` | 覆盖最近事件列表 |
+| `events` | 覆盖最近事件列表；传入空列表可清空历史 |
 
 ## 配置
 
