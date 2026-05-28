@@ -59,6 +59,11 @@ def parse_args(argv=None):
         help="输出完整 JSON，而不是中文摘要"
     )
     parser.add_argument(
+        "--health",
+        action="store_true",
+        help="读取 /api/health 并输出服务健康状态"
+    )
+    parser.add_argument(
         "--payload-file",
         help="从 JSON 文件读取状态包，命令行参数会覆盖文件中的同名字段"
     )
@@ -180,6 +185,15 @@ def request_vibe(url: str, payload: Optional[Dict[str, Any]], timeout: float) ->
         raise RuntimeError(f"无法连接 KindleVibe：{e}") from e
 
 
+def derive_health_url(url: str) -> str:
+    url = url.rstrip("/")
+    if url.endswith("/api/vibe"):
+        return url[:-len("/api/vibe")] + "/api/health"
+    if url.endswith("/api/health"):
+        return url
+    return url + "/api/health"
+
+
 def format_summary(status: Dict[str, Any]) -> str:
     blockers = status.get("blockers") or []
     participants = status.get("participants") or []
@@ -200,8 +214,39 @@ def format_summary(status: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def format_health_summary(health: Dict[str, Any]) -> str:
+    vibe = health.get("vibe") or {}
+    codex = health.get("codex") or {}
+    codex_error = codex.get("error") or "无"
+    stale = "可能过期" if vibe.get("stale") else "正常"
+
+    lines = [
+        f"服务：{health.get('status', '未知')}",
+        f"检查时间：{health.get('checked_at', '未知')}",
+        f"Vibe 状态：{vibe.get('state', '未知')}",
+        f"Vibe 心跳：{stale}",
+        f"Vibe 更新时间：{vibe.get('updated_at', '未知')}",
+        f"Codex 数据来源：{codex.get('source', '未知')}",
+        f"Codex 错误：{codex_error}",
+    ]
+    return "\n".join(lines)
+
+
 def main(argv=None) -> int:
     args = parse_args(argv)
+    if args.health:
+        try:
+            health = request_vibe(derive_health_url(args.url), None, args.timeout)
+        except RuntimeError as e:
+            print(str(e), file=sys.stderr)
+            return 1
+
+        if args.json:
+            print(json.dumps(health, indent=2, ensure_ascii=False))
+        else:
+            print(format_health_summary(health))
+        return 0
+
     try:
         payload = build_payload(args)
     except ValueError as e:
