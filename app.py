@@ -1556,6 +1556,12 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
 
 class RequestHandler(BaseHTTPRequestHandler):
     """HTTP request handler."""
+
+    def send_no_cache_headers(self):
+        """Send headers that keep Kindle browsers from showing stale state."""
+        self.send_header("Cache-Control", "no-store, no-cache, max-age=0, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
     
     def do_GET(self):
         parsed_path = urlparse(self.path)
@@ -1568,6 +1574,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             html = generate_main_html(usage, load_vibe_status())
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_no_cache_headers()
             self.end_headers()
             self.wfile.write(html.encode("utf-8"))
         
@@ -1575,6 +1582,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             html = generate_settings_html()
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_no_cache_headers()
             self.end_headers()
             self.wfile.write(html.encode("utf-8"))
 
@@ -1585,7 +1593,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             status_text = generate_status_text(usage, load_vibe_status())
             self.send_response(200)
             self.send_header("Content-Type", "text/plain; charset=utf-8")
-            self.send_header("Cache-Control", "no-store")
+            self.send_no_cache_headers()
             self.end_headers()
             self.wfile.write(status_text.encode("utf-8"))
         
@@ -1594,20 +1602,22 @@ class RequestHandler(BaseHTTPRequestHandler):
                 usage = usage_cache
             
             self.send_response(200)
-            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_no_cache_headers()
             self.end_headers()
             self.wfile.write(json.dumps(usage.to_dict(), indent=2).encode("utf-8"))
 
         elif path == "/api/vibe":
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Cache-Control", "no-store")
+            self.send_no_cache_headers()
             self.end_headers()
             self.wfile.write(json.dumps(load_vibe_status(), indent=2, ensure_ascii=False).encode("utf-8"))
         
         elif path == "/api/config":
             self.send_response(200)
-            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_no_cache_headers()
             self.end_headers()
             self.wfile.write(json.dumps(config, indent=2).encode("utf-8"))
         
@@ -1669,6 +1679,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_no_cache_headers()
             self.end_headers()
             self.wfile.write(html.encode("utf-8"))
 
@@ -1680,18 +1691,20 @@ class RequestHandler(BaseHTTPRequestHandler):
                 status = update_vibe_status(payload)
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
-                self.send_header("Cache-Control", "no-store")
+                self.send_no_cache_headers()
                 self.end_headers()
                 self.wfile.write(json.dumps(status, indent=2, ensure_ascii=False).encode("utf-8"))
             except (json.JSONDecodeError, ValueError) as e:
                 self.send_response(400)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_no_cache_headers()
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": f"请求格式错误：{str(e)}"}, ensure_ascii=False).encode("utf-8"))
             except Exception as e:
                 logger.exception("Error updating vibe status")
                 self.send_response(500)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_no_cache_headers()
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": f"保存状态失败：{str(e)}"}, ensure_ascii=False).encode("utf-8"))
         
