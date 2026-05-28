@@ -1,0 +1,21 @@
+{
+  "server": {
+    "port": 8080,
+    "host": "0.0.0.0"
+  },
+  "refresh": {
+    "interval_seconds": 300,
+    "auto_refresh_page_ms": 300000
+  },
+  "codex": {
+    "enabled": true,
+    "source": "auto",
+    "session_file_limit": 10
+  },
+  "display": {
+    "show_credits": false,
+    "show_plan_type": true,
+    "show_data_source": true,
+    "show_last_updated": true
+  }
+}

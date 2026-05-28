@@ -1,0 +1,13 @@
+#!/usr/bin/expect -f
+
+set timeout 10
+spawn codex /status
+expect {
+    -re "(.*)\r\n" {
+        # Continue reading
+        exp_continue
+    }
+    eof {
+        # Output captured
+    }
+}
