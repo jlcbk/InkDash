@@ -173,6 +173,7 @@ python3 vibe_update.py --payload-file vibe_status.example.json --state 等待评
 - `GET /settings`：设置页。
 - `GET /api/vibe`：读取 vibe coding 状态。
 - `POST /api/vibe`：更新 vibe coding 状态。
+- `GET /api/health`：健康检查，返回服务状态、vibe 状态是否过期、Codex 数据是否报错。
 - `GET /api/usage`：读取 Codex 用量。
 - `GET /api/config`：读取当前配置。
 

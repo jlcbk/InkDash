@@ -106,6 +106,22 @@ class VibeStatusTests(unittest.TestCase):
         self.assertIn('name="stale_after_seconds"', html)
         self.assertIn("状态过期阈值", html)
 
+    def test_build_health_status_reports_vibe_and_codex_state(self):
+        usage = app.CodexUsage()
+        usage.source = "session"
+        usage.error = ""
+        status = app.normalize_vibe_status({
+            "state": "运行中",
+            "updated_at": app.now_display(),
+        })
+
+        health = app.build_health_status(usage, status)
+
+        self.assertEqual(health["status"], "ok")
+        self.assertEqual(health["vibe"]["state"], "运行中")
+        self.assertFalse(health["vibe"]["stale"])
+        self.assertEqual(health["codex"]["source"], "session")
+
 
 if __name__ == "__main__":
     unittest.main()

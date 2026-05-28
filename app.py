@@ -1239,6 +1239,25 @@ def generate_status_text(usage: CodexUsage, vibe_status: Dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def build_health_status(usage: CodexUsage, vibe_status: Dict[str, Any]) -> Dict[str, Any]:
+    """Build a compact health payload for agents and monitoring scripts."""
+    return {
+        "status": "ok",
+        "checked_at": now_display(),
+        "vibe": {
+            "state": vibe_status.get("state", ""),
+            "updated_at": vibe_status.get("updated_at", ""),
+            "stale": is_vibe_status_stale(vibe_status),
+            "stale_after_seconds": vibe_stale_after_seconds(),
+        },
+        "codex": {
+            "source": usage.source,
+            "last_updated": usage.last_updated,
+            "error": usage.error,
+        }
+    }
+
+
 def generate_settings_html(message: str = "", message_type: str = "") -> str:
     """Generate settings page HTML."""
     msg_html = ""
@@ -1619,6 +1638,17 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_no_cache_headers()
             self.end_headers()
             self.wfile.write(json.dumps(usage.to_dict(), indent=2).encode("utf-8"))
+
+        elif path == "/api/health":
+            with cache_lock:
+                usage = usage_cache
+
+            health = build_health_status(usage, load_vibe_status())
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_no_cache_headers()
+            self.end_headers()
+            self.wfile.write(json.dumps(health, indent=2, ensure_ascii=False).encode("utf-8"))
 
         elif path == "/api/vibe":
             self.send_response(200)
