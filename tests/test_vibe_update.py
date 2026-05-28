@@ -20,7 +20,8 @@ class VibeUpdateTests(unittest.TestCase):
             "--participant", "@scnet_brain",
             "--participant", "@opencode",
             "--blocker", "",
-            "--event", "CLI 写入状态。"
+            "--event", "CLI 写入状态。",
+            "--heartbeat"
         ])
 
         payload = vibe_update.build_payload(args)
@@ -30,6 +31,7 @@ class VibeUpdateTests(unittest.TestCase):
         self.assertEqual(payload["participants"], ["@scnet_brain", "@opencode"])
         self.assertEqual(payload["blockers"], [])
         self.assertEqual(payload["event"], "CLI 写入状态。")
+        self.assertTrue(payload["heartbeat"])
 
     def test_format_summary_uses_chinese_labels(self):
         summary = vibe_update.format_summary({

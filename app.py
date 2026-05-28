@@ -79,6 +79,9 @@ DEFAULT_CONFIG = {
         "source": "auto",
         "session_file_limit": 10
     },
+    "vibe": {
+        "stale_after_seconds": 900
+    },
     "display": {
         "show_credits": True,
         "show_plan_type": True,
@@ -141,6 +144,34 @@ config = load_config()
 def now_display() -> str:
     """Return a local timestamp for Kindle display and API payloads."""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def vibe_stale_after_seconds() -> int:
+    """Return the heartbeat freshness threshold."""
+    value = config.get("vibe", {}).get("stale_after_seconds", 900)
+    try:
+        return max(60, int(value))
+    except (TypeError, ValueError):
+        return 900
+
+
+def parse_display_time(value: Any) -> Optional[datetime]:
+    """Parse the local display timestamp used by vibe status records."""
+    try:
+        return datetime.strptime(str(value), "%Y-%m-%d %H:%M:%S")
+    except (TypeError, ValueError):
+        return None
+
+
+def is_vibe_status_stale(status: Dict[str, Any], now: Optional[datetime] = None) -> bool:
+    """Return true when the displayed status has not been updated recently."""
+    updated_at = parse_display_time(status.get("updated_at"))
+    if not updated_at:
+        return False
+
+    now = now or datetime.now()
+    age_seconds = (now - updated_at).total_seconds()
+    return age_seconds > vibe_stale_after_seconds()
 
 
 def default_vibe_status() -> Dict[str, Any]:
@@ -698,11 +729,17 @@ def generate_main_html(usage: CodexUsage, vibe_status: Dict[str, Any]) -> str:
         blockers = _as_text_list(vibe_status.get("blockers"))
         participants = _as_text_list(vibe_status.get("participants"))
         events = _as_event_list(vibe_status.get("events"))
+        stale = is_vibe_status_stale(vibe_status)
+        heartbeat_label = "可能过期" if stale else "心跳正常"
+        heartbeat_class = "stale-pill" if stale else "fresh-pill"
         vibe_board = f'''
     <section class="panel vibe-panel">
         <div class="panel-title-row">
             <h2>{h(vibe_status.get("title", "Vibe Coding 看板"))}</h2>
-            <span class="state-pill">{h(vibe_status.get("state", "待更新"))}</span>
+            <div class="pill-group">
+                <span class="state-pill">{h(vibe_status.get("state", "待更新"))}</span>
+                <span class="{heartbeat_class}">{heartbeat_label}</span>
+            </div>
         </div>
 
         <div class="main-objective">{h(vibe_status.get("objective", ""))}</div>
@@ -871,6 +908,33 @@ def generate_main_html(usage: CodexUsage, vibe_status: Dict[str, Any]) -> str:
             font-size: 20px;
             font-weight: 700;
             background: #eeeeee;
+        }}
+
+        .pill-group {{
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }}
+
+        .fresh-pill,
+        .stale-pill {{
+            display: inline-block;
+            min-width: 96px;
+            text-align: center;
+            border: 2px solid #000000;
+            padding: 6px 12px;
+            font-size: 20px;
+            font-weight: 700;
+        }}
+
+        .fresh-pill {{
+            background: #ffffff;
+        }}
+
+        .stale-pill {{
+            color: #ffffff;
+            background: #000000;
         }}
 
         .main-objective {{
@@ -1137,6 +1201,7 @@ def generate_status_text(usage: CodexUsage, vibe_status: Dict[str, Any]) -> str:
     blockers = _as_text_list(vibe_status.get("blockers"))
     participants = _as_text_list(vibe_status.get("participants"))
     events = _as_event_list(vibe_status.get("events"))
+    heartbeat = "可能过期" if is_vibe_status_stale(vibe_status) else "正常"
 
     lines = [
         "KindleVibe",
@@ -1150,6 +1215,7 @@ def generate_status_text(usage: CodexUsage, vibe_status: Dict[str, Any]) -> str:
         f"参与者：{', '.join(participants) if participants else '未指定'}",
         f"阻塞项：{', '.join(blockers) if blockers else '无'}",
         f"更新时间：{text(vibe_status.get('updated_at'), '未知')}",
+        f"心跳：{heartbeat}",
         "",
         "最近事件：",
     ]

@@ -12,6 +12,9 @@
     "source": "auto",
     "session_file_limit": 10
   },
+  "vibe": {
+    "stale_after_seconds": 900
+  },
   "display": {
     "show_credits": false,
     "show_plan_type": true,
