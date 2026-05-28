@@ -91,6 +91,15 @@ class VibeStatusTests(unittest.TestCase):
             now=datetime(2026, 5, 29, 1, 20, 1)
         ))
 
+    def test_main_html_uses_meta_refresh_without_javascript_timer(self):
+        usage = app.CodexUsage()
+        status = app.default_vibe_status()
+
+        html = app.generate_main_html(usage, status)
+
+        self.assertIn('http-equiv="refresh"', html)
+        self.assertNotIn("setTimeout", html)
+
 
 if __name__ == "__main__":
     unittest.main()

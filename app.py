@@ -827,6 +827,7 @@ def generate_main_html(usage: CodexUsage, vibe_status: Dict[str, Any]) -> str:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="{refresh_ms // 1000}">
     <title>KindleVibe</title>
     <style>
         * {{
@@ -1175,12 +1176,6 @@ def generate_main_html(usage: CodexUsage, vibe_status: Dict[str, Any]) -> str:
         <div>页面每 {refresh_ms // 1000} 秒自动刷新</div>
         <div>KindleVibe-Python</div>
     </footer>
-
-    <script>
-        setTimeout(function() {{
-            location.reload();
-        }}, {refresh_ms});
-    </script>
 </body>
 </html>'''
 
