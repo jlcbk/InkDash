@@ -1,0 +1,18 @@
+{
+  "state": "被阻塞",
+  "objective": "等待外部信息后继续推进",
+  "current_task": "整理阻塞原因和需要的输入",
+  "next_action": "拿到输入后恢复实现或验证",
+  "participants": [
+    "@scnet_brain"
+  ],
+  "blockers": [
+    "缺少必要的人类决策或外部资源"
+  ],
+  "events": [
+    {
+      "time": "示例",
+      "text": "当前任务被外部输入阻塞。"
+    }
+  ]
+}

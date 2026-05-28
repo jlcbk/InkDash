@@ -148,6 +148,15 @@ python3 vibe_update.py --payload-file status.json --event "自动化任务完成
 
 `status.json` 可以参考仓库里的 `vibe_status.example.json`。
 
+仓库也提供了常见状态包模板，可以直接复用：
+
+```bash
+python3 vibe_update.py --payload-file examples/payloads/coding.json --from-git
+python3 vibe_update.py --payload-file examples/payloads/review.json --event "本轮改动已交付。"
+python3 vibe_update.py --payload-file examples/payloads/blocked.json --blocker "等待人工确认"
+python3 vibe_update.py --payload-file examples/payloads/done.json
+```
+
 阻塞项解决后，可以显式清空阻塞列表：
 
 ```bash
