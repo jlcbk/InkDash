@@ -56,7 +56,22 @@ def parse_args(argv=None):
         default=None,
         help="阻塞项，可重复传入；不传表示不修改"
     )
+    parser.add_argument(
+        "--clear-blockers",
+        action="store_true",
+        help="清空阻塞项；不能和 --blocker 同时使用"
+    )
+    parser.add_argument(
+        "--clear-participants",
+        action="store_true",
+        help="清空参与者；不能和 --participant 同时使用"
+    )
     parser.add_argument("--event", help="追加一条最近事件")
+    parser.add_argument(
+        "--clear-events",
+        action="store_true",
+        help="清空最近事件；可以和 --event 一起使用以保留一条新事件"
+    )
     parser.add_argument(
         "--heartbeat",
         action="store_true",
@@ -147,6 +162,11 @@ def load_payload_file(path: Optional[str]) -> Dict[str, Any]:
 
 
 def build_payload(args) -> Dict[str, Any]:
+    if args.clear_blockers and args.blocker is not None:
+        raise ValueError("不能同时使用 --blocker 和 --clear-blockers")
+    if args.clear_participants and args.participant is not None:
+        raise ValueError("不能同时使用 --participant 和 --clear-participants")
+
     payload: Dict[str, Any] = load_payload_file(args.payload_file)
     for field in (
         "state",
@@ -163,8 +183,17 @@ def build_payload(args) -> Dict[str, Any]:
 
     if args.participant is not None:
         payload["participants"] = clean_list(args.participant)
+    elif args.clear_participants:
+        payload["participants"] = []
+
     if args.blocker is not None:
         payload["blockers"] = clean_list(args.blocker)
+    elif args.clear_blockers:
+        payload["blockers"] = []
+
+    if args.clear_events:
+        payload["events"] = []
+
     if args.heartbeat:
         payload["heartbeat"] = True
     if args.from_git:

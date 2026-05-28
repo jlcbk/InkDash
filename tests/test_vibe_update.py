@@ -97,6 +97,30 @@ class VibeUpdateTests(unittest.TestCase):
         self.assertEqual(payload["project"], "文件项目")
         self.assertEqual(payload["participants"], ["@cli"])
 
+    def test_clear_flags_build_empty_lists(self):
+        args = vibe_update.parse_args([
+            "--clear-blockers",
+            "--clear-participants",
+            "--clear-events",
+            "--event", "清理历史后继续。"
+        ])
+
+        payload = vibe_update.build_payload(args)
+
+        self.assertEqual(payload["blockers"], [])
+        self.assertEqual(payload["participants"], [])
+        self.assertEqual(payload["events"], [])
+        self.assertEqual(payload["event"], "清理历史后继续。")
+
+    def test_clear_flags_conflict_with_explicit_lists(self):
+        args = vibe_update.parse_args([
+            "--blocker", "等待 CI",
+            "--clear-blockers",
+        ])
+
+        with self.assertRaisesRegex(ValueError, "--blocker"):
+            vibe_update.build_payload(args)
+
     def test_default_url_can_come_from_environment(self):
         with patch.dict(vibe_update.os.environ, {"KINDLEVIBE_URL": "http://kindle.local/api/vibe"}):
             args = vibe_update.parse_args([])
