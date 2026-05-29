@@ -975,6 +975,9 @@ def generate_main_html(
             return "暂无"
         return f"{number:.1f}%"
 
+    def scaled(px: int) -> str:
+        return f"{round(px * text_scale_ratio)}px"
+
     def layout_link(mode: str) -> str:
         active_class = " active" if mode == layout_mode else ""
         return f'<a class="layout-option{active_class}" href="/layout?mode={h(mode)}">{h(LAYOUT_MODE_LABELS[mode])}</a>'
@@ -1119,7 +1122,6 @@ def generate_main_html(
         }}
 
         body {{
-            --text-scale: {text_scale_ratio};
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background: #ffffff;
             color: #000000;
@@ -1145,14 +1147,14 @@ def generate_main_html(
         }}
 
         .header h1 {{
-            font-size: calc(44px * var(--text-scale));
+            font-size: {scaled(44)};
             line-height: 1;
             font-weight: 800;
         }}
 
         .subtitle {{
             margin-top: 8px;
-            font-size: calc(20px * var(--text-scale));
+            font-size: {scaled(20)};
             color: #333333;
         }}
 
@@ -1172,7 +1174,7 @@ def generate_main_html(
             color: #ffffff;
             border: 2px solid #000000;
             padding: 9px 14px;
-            font-size: calc(18px * var(--text-scale));
+            font-size: {scaled(18)};
             text-decoration: none;
         }}
 
@@ -1188,7 +1190,7 @@ def generate_main_html(
             color: #000000;
             padding: 9px 10px;
             border-right: 1px solid #000000;
-            font-size: calc(18px * var(--text-scale));
+            font-size: {scaled(18)};
             font-weight: 700;
             text-align: center;
             text-decoration: none;
@@ -1234,7 +1236,7 @@ def generate_main_html(
         }}
 
         .panel h2 {{
-            font-size: calc(28px * var(--text-scale));
+            font-size: {scaled(28)};
             margin-bottom: 14px;
         }}
 
@@ -1254,7 +1256,7 @@ def generate_main_html(
             text-align: center;
             border: 2px solid #000000;
             padding: 6px 12px;
-            font-size: calc(20px * var(--text-scale));
+            font-size: {scaled(20)};
             font-weight: 700;
             background: #eeeeee;
         }}
@@ -1273,7 +1275,7 @@ def generate_main_html(
             text-align: center;
             border: 2px solid #000000;
             padding: 6px 12px;
-            font-size: calc(20px * var(--text-scale));
+            font-size: {scaled(20)};
             font-weight: 700;
         }}
 
@@ -1287,7 +1289,7 @@ def generate_main_html(
         }}
 
         .main-objective {{
-            font-size: calc(30px * var(--text-scale));
+            font-size: {scaled(30)};
             font-weight: 800;
             margin-bottom: 16px;
             word-break: break-word;
@@ -1310,14 +1312,14 @@ def generate_main_html(
 
         .fact-label,
         .section-label {{
-            font-size: calc(15px * var(--text-scale));
+            font-size: {scaled(15)};
             color: #333333;
             font-weight: 700;
             margin-bottom: 6px;
         }}
 
         .fact-value {{
-            font-size: calc(22px * var(--text-scale));
+            font-size: {scaled(22)};
             font-weight: 700;
             word-break: break-word;
         }}
@@ -1334,7 +1336,7 @@ def generate_main_html(
             min-height: 86px;
             border: 1px solid #000000;
             padding: 12px;
-            font-size: calc(24px * var(--text-scale));
+            font-size: {scaled(24)};
             font-weight: 700;
             word-break: break-word;
         }}
@@ -1344,14 +1346,14 @@ def generate_main_html(
             border: 1px solid #000000;
             padding: 5px 9px;
             margin: 0 6px 6px 0;
-            font-size: calc(18px * var(--text-scale));
+            font-size: {scaled(18)};
             font-weight: 700;
             background: #f2f2f2;
         }}
 
         .muted {{
             color: #555555;
-            font-size: calc(18px * var(--text-scale));
+            font-size: {scaled(18)};
         }}
 
         .events {{
@@ -1367,13 +1369,13 @@ def generate_main_html(
         }}
 
         .event-time {{
-            font-size: calc(16px * var(--text-scale));
+            font-size: {scaled(16)};
             color: #333333;
             font-weight: 700;
         }}
 
         .event-text {{
-            font-size: calc(20px * var(--text-scale));
+            font-size: {scaled(20)};
             font-weight: 700;
             word-break: break-word;
         }}
@@ -1388,12 +1390,12 @@ def generate_main_html(
         }}
 
         .limit-label {{
-            font-size: calc(21px * var(--text-scale));
+            font-size: {scaled(21)};
             font-weight: 800;
         }}
 
         .limit-reset {{
-            font-size: calc(15px * var(--text-scale));
+            font-size: {scaled(15)};
             color: #333333;
             margin-top: 4px;
         }}
@@ -1411,7 +1413,7 @@ def generate_main_html(
         }}
 
         .limit-percent {{
-            font-size: calc(23px * var(--text-scale));
+            font-size: {scaled(23)};
             font-weight: 800;
             text-align: right;
         }}
@@ -1434,20 +1436,20 @@ def generate_main_html(
         .token-window,
         .token-value,
         .token-cache {{
-            font-size: calc(19px * var(--text-scale));
+            font-size: {scaled(19)};
             font-weight: 700;
             word-break: break-word;
         }}
 
         .token-value {{
-            font-size: calc(22px * var(--text-scale));
+            font-size: {scaled(22)};
             font-weight: 800;
         }}
 
         .token-note {{
             margin-top: 9px;
             color: #333333;
-            font-size: calc(15px * var(--text-scale));
+            font-size: {scaled(15)};
             font-weight: 700;
         }}
 
@@ -1461,7 +1463,7 @@ def generate_main_html(
 
         .info-label,
         .info-value {{
-            font-size: calc(20px * var(--text-scale));
+            font-size: {scaled(20)};
             font-weight: 700;
             word-break: break-word;
         }}
@@ -1470,7 +1472,7 @@ def generate_main_html(
             border: 1px solid #000000;
             background: #f4f4f4;
             padding: 10px;
-            font-size: calc(19px * var(--text-scale));
+            font-size: {scaled(19)};
             font-weight: 700;
             word-break: break-word;
         }}
@@ -1481,7 +1483,7 @@ def generate_main_html(
             padding-top: 12px;
             border-top: 3px solid #000000;
             color: #333333;
-            font-size: calc(16px * var(--text-scale));
+            font-size: {scaled(16)};
         }}
 
         .layout-landscape .dashboard-layout {{
@@ -1512,7 +1514,7 @@ def generate_main_html(
             }}
 
             .header h1 {{
-                font-size: calc(34px * var(--text-scale));
+                font-size: {scaled(34)};
             }}
 
             .header-actions {{
@@ -1523,7 +1525,7 @@ def generate_main_html(
 
             .settings-btn,
             .layout-option {{
-                font-size: calc(16px * var(--text-scale));
+                font-size: {scaled(16)};
                 padding: 8px 10px;
             }}
 
@@ -1537,7 +1539,7 @@ def generate_main_html(
             }}
 
             .main-objective {{
-                font-size: calc(24px * var(--text-scale));
+                font-size: {scaled(24)};
             }}
         }}
 
@@ -1561,7 +1563,7 @@ def generate_main_html(
 
             .layout-landscape .settings-btn,
             .layout-landscape .layout-option {{
-                font-size: calc(18px * var(--text-scale));
+                font-size: {scaled(18)};
                 padding: 9px 10px;
             }}
 
