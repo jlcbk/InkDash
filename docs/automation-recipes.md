@@ -4,16 +4,16 @@
 
 ## 基础环境变量
 
-如果 KindleVibe 运行在另一台电脑上，先设置 API 地址：
+如果 InkDash 运行在另一台电脑上，先设置 API 地址：
 
 ```bash
-export KINDLEVIBE_URL=http://192.168.1.20:8080/api/vibe
+export INKDASH_URL=http://192.168.1.20:8080/api/vibe
 ```
 
 如果服务端配置了写入 token：
 
 ```bash
-export KINDLEVIBE_TOKEN=your-token
+export INKDASH_TOKEN=your-token
 ```
 
 ## 开始一轮编码
@@ -142,9 +142,9 @@ make presets
 当脚本不方便调用 Python CLI 时，可以直接写入 API：
 
 ```bash
-curl -X POST "$KINDLEVIBE_URL" \
+curl -X POST "$INKDASH_URL" \
   -H 'Content-Type: application/json' \
-  -H "X-KindleVibe-Token: $KINDLEVIBE_TOKEN" \
+  -H "X-InkDash-Token: $INKDASH_TOKEN" \
   -d '{
     "state": "编码中",
     "current_task": "执行自动化任务",
@@ -153,11 +153,11 @@ curl -X POST "$KINDLEVIBE_URL" \
   }'
 ```
 
-如果没有启用 token，可以省略 `X-KindleVibe-Token` 请求头。
+如果没有启用 token，可以省略 `X-InkDash-Token` 请求头（兼容旧名 `X-KindleVibe-Token`）。
 
 ## 最小状态机建议
 
-自动化脚本可以按下面的状态顺序更新 KindleVibe：
+自动化脚本可以按下面的状态顺序更新 InkDash：
 
 | 阶段 | 推荐命令 |
 | --- | --- |

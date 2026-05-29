@@ -1,6 +1,6 @@
 # 文档导航
 
-这里汇总 KindleVibe-Python 的主要中文文档。第一次使用时建议按顺序阅读；只接入脚本或维护项目时，可以直接跳到对应章节。
+这里汇总 InkDash（墨板）的主要中文文档。第一次使用时建议按顺序阅读；只接入脚本或维护项目时，可以直接跳到对应章节。
 
 ## 使用和部署
 
@@ -15,9 +15,9 @@
 
 | 文件 | 适合场景 |
 | --- | --- |
-| [systemd user service](../examples/systemd/kindlevibe.service) | Linux 用户级后台服务。 |
-| [macOS launchd plist](../examples/launchd/com.kindlevibe.plist) | macOS 用户级后台服务。 |
+| [systemd user service](../examples/systemd/inkdash.service) | Linux 用户级后台服务。 |
 
+| [macOS launchd plist](../examples/launchd/com.inkdash.plist) | macOS 用户级后台服务。 |
 ## 开发和维护
 
 | 文档 | 适合场景 |

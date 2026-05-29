@@ -1,6 +1,6 @@
 # 架构说明
 
-KindleVibe-Python 当前保持单进程、标准库优先的结构，目标是让旧 Kindle 浏览器、终端脚本和协作 agent 都能稳定读取同一份 vibe coding 状态。
+InkDash（墨板）当前保持单进程、标准库优先的结构，目标是让旧 Kindle 浏览器、终端脚本和协作 agent 都能稳定读取同一份 vibe coding 状态。
 
 ## 主要模块
 
@@ -53,7 +53,7 @@ vibe_update.py  ----POST /api/vibe---->  app.py
 - `event` 会追加一条事件。
 - `heartbeat` 用于刷新 `updated_at`，表示当前状态仍然有效。
 
-如果配置了 `security.api_token`，写入状态需要提供 `X-KindleVibe-Token` 请求头或 `token` 查询参数。
+如果配置了 `security.api_token`，写入状态需要提供 `X-InkDash-Token`（兼容旧名 `X-KindleVibe-Token`）请求头或 `token` 查询参数。
 
 ## CLI 职责
 
@@ -64,7 +64,7 @@ vibe_update.py  ----POST /api/vibe---->  app.py
 - 从 JSON 状态包或内置 preset 构建 payload。
 - 查询健康状态。
 - 列出内置 preset。
-- 读取 `KINDLEVIBE_URL` 和 `KINDLEVIBE_TOKEN`。
+- 读取 `INKDASH_URL`（兼容旧名 `KINDLEVIBE_URL`）和 `INKDASH_TOKEN`（兼容旧名 `KINDLEVIBE_TOKEN`）。
 
 CLI 参数优先级高于状态包和 preset，因此可以先加载模板，再用命令行覆盖某个字段。
 

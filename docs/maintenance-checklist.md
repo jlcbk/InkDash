@@ -1,6 +1,6 @@
 # 维护检查清单
 
-这份清单用于发布前、部署前和排障时快速确认 KindleVibe-Python 的关键路径没有遗漏。
+这份清单用于发布前、部署前和排障时快速确认 InkDash 的关键路径没有遗漏。
 
 ## 每次改动前
 
@@ -64,7 +64,7 @@ make heartbeat
 查看日志：
 
 ```bash
-tail -n 80 logs/kindlevibe.log
+tail -n 80 logs/inkdash.log
 ```
 
 ## 排障
@@ -73,8 +73,8 @@ tail -n 80 logs/kindlevibe.log
 | --- | --- |
 | Kindle 页面不更新 | 请求 `/status.txt`，确认 no-cache 响应和 `updated_at`。 |
 | 状态显示可能过期 | 用 `make heartbeat` 刷新，或调整 `vibe.stale_after_seconds`。 |
-| 写入返回 401 | 检查 `KINDLEVIBE_TOKEN` 或 `X-KindleVibe-Token`。 |
-| Codex 用量为空 | 检查 Codex CLI 登录状态和 `logs/kindlevibe.log`。 |
+| 写入返回 401 | 检查 `INKDASH_TOKEN`（兼容旧名 `KINDLEVIBE_TOKEN`）或 `X-InkDash-Token`（兼容旧名 `X-KindleVibe-Token`）。 |
+| Codex 用量为空 | 检查 Codex CLI 登录状态和 `logs/inkdash.log`。 |
 | preset 不一致 | 运行 `make presets`，再检查 `examples/payloads/` 和测试。 |
 
 ## 新增端点时

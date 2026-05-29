@@ -1,7 +1,7 @@
 {
   "title": "Vibe Coding 看板",
   "state": "编码中",
-  "project": "KindleVibe-Python",
+  "project": "InkDash",
   "branch": "feature/vibe-board",
   "objective": "把 Kindle 变成常亮的 vibe coding 状态屏。",
   "current_task": "实现通用状态写入接口和 Kindle 友好的状态面板。",

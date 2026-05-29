@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-KindleVibe-Python: Kindle-friendly dashboard for vibe coding status.
+InkDash: Dashboard for vibe coding status on e-ink / Kindle devices.
 """
 
 import argparse
@@ -27,7 +27,7 @@ from typing import Optional, Dict, Any
 
 def setup_logging():
     """Configure logging with both file and console handlers."""
-    logger = logging.getLogger("KindleVibe")
+    logger = logging.getLogger("InkDash")
     logger.setLevel(logging.DEBUG)
     
     # Console handler
@@ -42,7 +42,7 @@ def setup_logging():
     # File handler
     log_dir = Path(__file__).parent / "logs"
     log_dir.mkdir(exist_ok=True)
-    log_file = log_dir / "kindlevibe.log"
+    log_file = log_dir / "inkdash.log"
     file_handler = logging.FileHandler(log_file, encoding="utf-8")
     file_handler.setLevel(logging.DEBUG)
     file_format = logging.Formatter(
@@ -79,8 +79,8 @@ TEXT_SCALE_MAX = 200
 TEXT_SCALE_DEFAULT = 125
 TEXT_SCALE_QUICK_VALUES = (100, 125, 150)
 PREFERENCE_COOKIE_MAX_AGE = 365 * 24 * 60 * 60
-LAYOUT_COOKIE = "kindlevibe_layout"
-TEXT_SCALE_COOKIE = "kindlevibe_text_scale"
+LAYOUT_COOKIE = "inkdash_layout"
+TEXT_SCALE_COOKIE = "inkdash_text_scale"
 
 DEFAULT_CONFIG = {
     "server": {
@@ -258,7 +258,7 @@ def default_vibe_status() -> Dict[str, Any]:
         "events": [
             {
                 "time": timestamp,
-                "text": "KindleVibe 已启动，等待 vibe coding 状态更新。"
+                "text": "InkDash 已启动，等待 vibe coding 状态更新。"
             }
         ]
     }
@@ -697,7 +697,7 @@ def fetch_codex_status_cli() -> CodexUsage:
         # Initialize
         init_response = send_request("initialize", {
             "clientInfo": {
-                "name": "kindlevibe",
+                "name": "inkdash",
                 "version": "1.0.0"
             }
         }, timeout=5.0)
@@ -1110,7 +1110,7 @@ def generate_main_html(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="{refresh_ms // 1000}">
-    <title>KindleVibe</title>
+    <title>InkDash</title>
     <style>
         * {{
             margin: 0;
@@ -1590,7 +1590,7 @@ def generate_main_html(
 </head>
 <body class="layout-{h(layout_mode)}" style="--text-scale: {text_scale_ratio:.2f};">
     <header class="header">
-        <h1>KindleVibe</h1>
+        <h1>InkDash</h1>
         <div class="subtitle">Vibe Coding 常亮状态面板 · {h(layout_label)}布局 · {text_scale_percent}%字号</div>
         <div class="header-actions">
             <nav class="layout-switch" aria-label="布局模式">
@@ -1659,7 +1659,7 @@ def generate_main_html(
 
     <footer class="footer">
         <div>页面每 {refresh_ms // 1000} 秒自动刷新</div>
-        <div>KindleVibe-Python</div>
+        <div>InkDash</div>
     </footer>
 </body>
 </html>'''
@@ -1721,7 +1721,7 @@ def generate_status_text(
     )
 
     lines = [
-        "KindleVibe",
+        "InkDash",
         "=" * 20,
         f"布局模式：{layout_label}",
         f"字号比例：{text_scale_percent}%",
@@ -1769,7 +1769,7 @@ def generate_status_text(
 def generate_presets_text(presets: list) -> str:
     """Generate a plain-text preset list for old Kindle browsers and scripts."""
     lines = [
-        "KindleVibe Presets",
+        "InkDash Presets",
         "=" * 20,
     ]
 
@@ -1850,7 +1850,7 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>设置 - KindleVibe</title>
+    <title>设置 - InkDash</title>
     <style>
         * {{
             margin: 0;
@@ -2173,7 +2173,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         if not expected:
             return True
 
-        supplied = self.headers.get("X-KindleVibe-Token", "").strip()
+        supplied = self.headers.get("X-InkDash-Token", "").strip()
+        if not supplied:
+            supplied = self.headers.get("X-KindleVibe-Token", "").strip()
         if tokens_match(expected, supplied):
             return True
 
@@ -2530,14 +2532,14 @@ def main():
     
     # Print connection info
     print("\n" + "=" * 50)
-    print("  KindleVibe-Python 已启动")
+    print("  InkDash 已启动")
     print("=" * 50)
     print(f"\n  本机访问:  http://localhost:{server_port}")
     print(f"  局域网访问: http://{local_ip}:{server_port}")
     print(f"\n  请在 Kindle 浏览器中打开局域网地址")
     print("=" * 50 + "\n")
     
-    logger.info(f"Starting KindleVibe-Python on http://{local_ip}:{server_port}")
+    logger.info(f"Starting InkDash on http://{local_ip}:{server_port}")
     logger.info("Press Ctrl+C to stop")
     
     try:

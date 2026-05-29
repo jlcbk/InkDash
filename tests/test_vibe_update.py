@@ -17,7 +17,7 @@ class VibeUpdateTests(unittest.TestCase):
     def test_build_payload_maps_cli_fields(self):
         args = vibe_update.parse_args([
             "--state", "编码中",
-            "--project", "KindleVibe-Python",
+            "--project", "InkDash",
             "--branch", "feature/cli",
             "--current-task", "补充 CLI",
             "--next-action", "运行测试",
@@ -40,7 +40,7 @@ class VibeUpdateTests(unittest.TestCase):
     def test_format_summary_uses_chinese_labels(self):
         summary = vibe_update.format_summary({
             "state": "等待评审",
-            "project": "KindleVibe-Python",
+            "project": "InkDash",
             "branch": "main",
             "objective": "显示状态",
             "current_task": "检查 PR",
@@ -52,7 +52,7 @@ class VibeUpdateTests(unittest.TestCase):
         })
 
         self.assertIn("状态：等待评审", summary)
-        self.assertIn("项目：KindleVibe-Python / 分支：main", summary)
+        self.assertIn("项目：InkDash / 分支：main", summary)
         self.assertIn("阻塞项：无", summary)
         self.assertIn("最近事件：测试通过。", summary)
 
@@ -60,7 +60,7 @@ class VibeUpdateTests(unittest.TestCase):
         def fake_run(cmd, cwd, capture_output, text, timeout):
             self.assertEqual(cwd, "/tmp/work")
             if cmd[1:] == ["rev-parse", "--show-toplevel"]:
-                return subprocess.CompletedProcess(cmd, 0, stdout="/tmp/work/KindleVibe-Python\n")
+                return subprocess.CompletedProcess(cmd, 0, stdout="/tmp/work/InkDash\n")
             if cmd[1:] == ["rev-parse", "--abbrev-ref", "HEAD"]:
                 return subprocess.CompletedProcess(cmd, 0, stdout="feature/status\n")
             return subprocess.CompletedProcess(cmd, 1, stdout="")
@@ -155,13 +155,13 @@ class VibeUpdateTests(unittest.TestCase):
             vibe_update.build_payload(args)
 
     def test_default_url_can_come_from_environment(self):
-        with patch.dict(vibe_update.os.environ, {"KINDLEVIBE_URL": "http://kindle.local/api/vibe"}):
+        with patch.dict(vibe_update.os.environ, {"INKDASH_URL": "http://kindle.local/api/vibe"}):
             args = vibe_update.parse_args([])
 
         self.assertEqual(args.url, "http://kindle.local/api/vibe")
 
     def test_default_token_can_come_from_environment(self):
-        with patch.dict(vibe_update.os.environ, {"KINDLEVIBE_TOKEN": "secret"}):
+        with patch.dict(vibe_update.os.environ, {"INKDASH_TOKEN": "secret"}):
             args = vibe_update.parse_args([])
 
         self.assertEqual(args.token, "secret")
@@ -197,7 +197,7 @@ class VibeUpdateTests(unittest.TestCase):
 
     def test_wait_for_health_returns_after_retry(self):
         calls = [
-            RuntimeError("无法连接 KindleVibe"),
+            RuntimeError("无法连接 InkDash"),
             {"status": "ok", "vibe": {}, "codex": {}},
         ]
 

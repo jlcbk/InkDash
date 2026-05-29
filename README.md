@@ -1,6 +1,6 @@
-# KindleVibe-Python
+# InkDash（墨板）
 
-KindleVibe-Python 是一个面向 Kindle 浏览器的常亮状态面板，用来显示 vibe coding 过程中的关键信息：当前目标、项目/分支、正在处理的任务、下一步、阻塞项、最近事件，以及 Codex 用量。
+InkDash（墨板）是一个面向电子墨水屏浏览器（Kindle 等）的常亮状态面板，用来显示 vibe coding 过程中的关键信息：当前目标、项目/分支、正在处理的任务、下一步、阻塞项、最近事件，以及 Codex 用量。
 
 这个版本只依赖 Python 标准库，适合在本机或局域网内运行，然后用 Kindle 打开页面作为低功耗状态屏。
 
@@ -71,7 +71,7 @@ curl -X POST http://localhost:8080/api/vibe \
   -H 'Content-Type: application/json' \
   -d '{
     "state": "编码中",
-    "project": "KindleVibe-Python",
+     "project": "InkDash",
     "branch": "feature/vibe-board",
     "objective": "把 Kindle 变成 vibe coding 常亮状态屏",
     "current_task": "实现通用状态写入接口",
@@ -93,7 +93,7 @@ curl http://localhost:8080/api/vibe
 ```bash
 python3 vibe_update.py \
   --state 编码中 \
-  --project KindleVibe-Python \
+  --project InkDash \
   --branch feature/vibe-board \
   --objective "把 Kindle 变成 vibe coding 常亮状态屏" \
   --current-task "补充 CLI 状态写入工具" \
@@ -103,17 +103,19 @@ python3 vibe_update.py \
   --event "CLI 已经能写入状态。"
 ```
 
-如果 KindleVibe 不在本机 8080 端口，可以用环境变量设置默认 API 地址：
+如果 InkDash 不在本机 8080 端口，可以用环境变量设置默认 API 地址：
 
 ```bash
-export KINDLEVIBE_URL=http://192.168.1.20:8080/api/vibe
+export INKDASH_URL=http://192.168.1.20:8080/api/vibe
 python3 vibe_update.py --heartbeat
 ```
+
+（兼容旧名 `KINDLEVIBE_URL`，前者优先级更高。）
 
 如果在 `config.json` 中配置了 `security.api_token`，写入状态时需要提供同一个 token：
 
 ```bash
-export KINDLEVIBE_TOKEN=your-token
+export INKDASH_TOKEN=your-token
 python3 vibe_update.py --heartbeat
 ```
 
@@ -298,7 +300,7 @@ make clear-events EVENT="开始新一轮状态记录。"
 
 ## 运行日志
 
-日志写入 `logs/kindlevibe.log`。如果 Codex 用量没有更新，先查看日志，再确认 Codex CLI 是否可用。
+日志写入 `logs/inkdash.log`。如果 Codex 用量没有更新，先查看日志，再确认 Codex CLI 是否可用。
 
 主看板中的 5 小时/周额度百分比来自 Codex 服务器侧 RPC，能反映同一账号的整体余量。本机 Token 消耗来自当前电脑的 `~/.codex/sessions` 和 `~/.codex/archived_sessions` 会话文件，只统计这台机器最近 24 小时和最近 7 天的 `last_token_usage`，不代表跨设备总消耗。
 
@@ -321,4 +323,4 @@ make ci
 
 ## 许可证
 
-WTFPL（与原 KindleVibe 保持一致）。
+WTFPL（与原 KindleVibe 项目保持一致）。

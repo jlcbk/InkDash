@@ -1,10 +1,10 @@
-# KindleVibe 使用指南
+# InkDash 使用指南
 
 这份指南面向把 Kindle 当作常亮 vibe coding 状态屏的日常使用场景。
 
 ## 启动服务
 
-在运行 Codex 或其他开发工具的电脑上启动 KindleVibe：
+在运行 Codex 或其他开发工具的电脑上启动 InkDash：
 
 ```bash
 python3 app.py --host 0.0.0.0 --port 8080
@@ -26,13 +26,13 @@ make run PYTHON=/path/to/python3
 
 ### Linux systemd
 
-Linux 用户可以参考 `examples/systemd/kindlevibe.service` 创建 user service。
+Linux 用户可以参考 `examples/systemd/inkdash.service` 创建 user service。
 
 复制示例文件：
 
 ```bash
 mkdir -p ~/.config/systemd/user
-cp examples/systemd/kindlevibe.service ~/.config/systemd/user/kindlevibe.service
+cp examples/systemd/inkdash.service ~/.config/systemd/user/inkdash.service
 ```
 
 根据实际路径修改：
@@ -44,25 +44,25 @@ cp examples/systemd/kindlevibe.service ~/.config/systemd/user/kindlevibe.service
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user enable --now kindlevibe.service
-systemctl --user status kindlevibe.service
+systemctl --user enable --now inkdash.service
+systemctl --user status inkdash.service
 ```
 
 查看日志：
 
 ```bash
-journalctl --user -u kindlevibe.service -f
+journalctl --user -u inkdash.service -f
 ```
 
 ### macOS launchd
 
-macOS 用户可以参考 `examples/launchd/com.kindlevibe.plist` 创建 launchd agent。
+macOS 用户可以参考 `examples/launchd/com.inkdash.plist` 创建 launchd agent。
 
 复制示例文件：
 
 ```bash
 mkdir -p ~/Library/LaunchAgents
-cp examples/launchd/com.kindlevibe.plist ~/Library/LaunchAgents/com.kindlevibe.plist
+cp examples/launchd/com.inkdash.plist ~/Library/LaunchAgents/com.inkdash.plist
 ```
 
 根据实际路径修改：
@@ -74,20 +74,20 @@ cp examples/launchd/com.kindlevibe.plist ~/Library/LaunchAgents/com.kindlevibe.p
 加载并启动：
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.kindlevibe.plist 2>/dev/null || true
-launchctl load ~/Library/LaunchAgents/com.kindlevibe.plist
-launchctl start com.kindlevibe
+launchctl unload ~/Library/LaunchAgents/com.inkdash.plist 2>/dev/null || true
+launchctl load ~/Library/LaunchAgents/com.inkdash.plist
+launchctl start com.inkdash
 ```
 
 查看日志：
 
 ```bash
-tail -f /tmp/kindlevibe.out.log /tmp/kindlevibe.err.log
+tail -f /tmp/inkdash.out.log /tmp/inkdash.err.log
 ```
 
 ## Kindle 端使用
 
-1. 让 Kindle 和运行 KindleVibe 的电脑处在同一个局域网。
+1. 让 Kindle 和运行 InkDash 的电脑处在同一个局域网。
 2. 打开 Kindle 浏览器。
 3. 访问服务启动时显示的局域网地址。
 4. 把 Kindle 放在桌面常亮显示。
@@ -145,14 +145,14 @@ python3 vibe_update.py \
 如果服务不在本机 8080 端口，可以设置环境变量：
 
 ```bash
-export KINDLEVIBE_URL=http://192.168.1.20:8080/api/vibe
+export INKDASH_URL=http://192.168.1.20:8080/api/vibe
 python3 vibe_update.py --heartbeat
 ```
 
 如果配置了写入 token：
 
 ```bash
-export KINDLEVIBE_TOKEN=your-token
+export INKDASH_TOKEN=your-token
 python3 vibe_update.py --heartbeat
 ```
 
@@ -293,7 +293,7 @@ Codex 用量依赖本机 Codex CLI 或本地会话文件。如果只想使用 vi
 
 ### CLI 连接不上服务
 
-确认 `KINDLEVIBE_URL` 或 `--url` 指向 `/api/vibe`：
+确认 `INKDASH_URL` 或 `--url` 指向 `/api/vibe`：
 
 ```bash
 python3 vibe_update.py --url http://127.0.0.1:8080/api/vibe --health
@@ -310,6 +310,6 @@ python3 vibe_update.py --token your-token --heartbeat
 也可以通过环境变量提供：
 
 ```bash
-export KINDLEVIBE_TOKEN=your-token
+export INKDASH_TOKEN=your-token
 python3 vibe_update.py --heartbeat
 ```

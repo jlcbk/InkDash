@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-把 vibe coding 状态写入 KindleVibe-Python 的小工具。
+把 vibe coding 状态写入 InkDash 的小工具。
 """
 
 import argparse
@@ -20,26 +20,32 @@ PRESET_DIR = Path(__file__).resolve().parent / "examples" / "payloads"
 
 
 def default_url() -> str:
-    return os.environ.get("KINDLEVIBE_URL", DEFAULT_URL)
+    url = os.environ.get("INKDASH_URL", "")
+    if not url:
+        url = os.environ.get("KINDLEVIBE_URL", DEFAULT_URL)
+    return url
 
 
 def default_token() -> str:
-    return os.environ.get("KINDLEVIBE_TOKEN", "")
+    token = os.environ.get("INKDASH_TOKEN", "")
+    if not token:
+        token = os.environ.get("KINDLEVIBE_TOKEN", "")
+    return token
 
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
-        description="读取或更新 KindleVibe 的 vibe coding 状态"
+        description="读取或更新 InkDash 的 vibe coding 状态"
     )
     parser.add_argument(
         "--url",
         default=default_url(),
-        help="KindleVibe API 地址；默认读取 KINDLEVIBE_URL，未设置时使用本机 8080"
+        help="InkDash API 地址；默认读取 INKDASH_URL（兼容 KINDLEVIBE_URL），未设置时使用本机 8080"
     )
     parser.add_argument(
         "--token",
         default=default_token(),
-        help="可选 API 写入 token；默认读取 KINDLEVIBE_TOKEN"
+        help="可选 API 写入 token；默认读取 INKDASH_TOKEN（兼容 KINDLEVIBE_TOKEN）"
     )
     parser.add_argument("--state", help="当前状态，例如：编码中、等待评审、被阻塞")
     parser.add_argument("--project", help="当前项目")
@@ -281,7 +287,7 @@ def request_vibe(
         headers["Content-Type"] = "application/json; charset=utf-8"
         method = "POST"
     if token:
-        headers["X-KindleVibe-Token"] = token
+        headers["X-InkDash-Token"] = token
 
     req = request.Request(url, data=data, headers=headers, method=method)
     try:
@@ -291,7 +297,7 @@ def request_vibe(
         body = e.read().decode("utf-8", errors="replace")
         raise RuntimeError(f"服务返回 {e.code}：{body}") from e
     except error.URLError as e:
-        raise RuntimeError(f"无法连接 KindleVibe：{e}") from e
+        raise RuntimeError(f"无法连接 InkDash：{e}") from e
 
 
 def derive_health_url(url: str) -> str:

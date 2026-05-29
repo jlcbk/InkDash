@@ -4,6 +4,15 @@
 
 ## 未发布
 
+### 变更
+
+- 项目从「KindleVibe-Python」更名为「InkDash（墨板）」。
+- 环境变量 `INKDASH_URL` / `INKDASH_TOKEN` 替代原来的 `KINDLEVIBE_URL` / `KINDLEVIBE_TOKEN`，旧名仍可作为 fallback。
+- HTTP 头 `X-InkDash-Token` 替代 `X-KindleVibe-Token`，旧名仍被接受。
+- Cookie 名 `inkdash_layout` / `inkdash_text_scale` 替代 `kindlevibe_layout` / `kindlevibe_text_scale`。
+- 示例 systemd 单元和 launchd plist 改为 `examples/systemd/inkdash.service` / `examples/launchd/com.inkdash.plist`。
+- 日志文件路径改为 `logs/inkdash.log`。
+
 ### 新增
 
 - Kindle 友好的 Vibe Coding 主看板，展示目标、项目、分支、当前任务、下一步、参与者、阻塞项和最近事件。

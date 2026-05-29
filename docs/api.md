@@ -1,6 +1,6 @@
 # API 参考
 
-本文档面向脚本、agent 和轻量监控工具，说明 KindleVibe-Python 当前提供的页面、JSON API 和纯文本端点。
+本文档面向脚本、agent 和轻量监控工具，说明 InkDash（墨板）当前提供的页面、JSON API 和纯文本端点。
 
 默认服务地址示例：
 
@@ -83,7 +83,7 @@ curl -X POST http://localhost:8080/api/vibe \
   -H 'Content-Type: application/json' \
   -d '{
     "state": "编码中",
-    "project": "KindleVibe-Python",
+     "project": "InkDash",
     "branch": "main",
     "current_task": "补充 API 文档",
     "next_action": "运行测试并交付 PR",
@@ -118,7 +118,7 @@ curl -X POST http://localhost:8080/api/vibe \
 ```bash
 curl -X POST http://localhost:8080/api/vibe \
   -H 'Content-Type: application/json' \
-  -H 'X-KindleVibe-Token: your-token' \
+  -H 'X-InkDash-Token: your-token' \
   -d '{"heartbeat": true}'
 ```
 

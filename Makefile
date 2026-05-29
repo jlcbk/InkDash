@@ -10,7 +10,7 @@ EVENT_ARG = $(if $(strip $(EVENT)),--event "$(EVENT)",)
 BLOCKER_ARG = $(if $(strip $(BLOCKER)),--blocker "$(BLOCKER)",)
 
 help:
-	@echo "KindleVibe-Python - Kindle 友好的 vibe coding 状态面板"
+	@echo "InkDash - 墨板：电子墨水屏友好的 vibe coding 状态面板"
 	@echo ""
 	@echo "用法："
 	@echo "  make run             在 $(PORT) 端口启动服务"
@@ -32,11 +32,11 @@ help:
 	@echo ""
 
 run:
-	@echo "正在 $(PORT) 端口启动 KindleVibe-Python..."
+	@echo "正在 $(PORT) 端口启动 InkDash..."
 	$(PYTHON) app.py --port $(PORT)
 
 stop:
-	@echo "正在停止 KindleVibe-Python..."
+	@echo "正在停止 InkDash..."
 	@if lsof -ti tcp:$(PORT) >/dev/null 2>&1; then \
 		kill $$(lsof -ti tcp:$(PORT)); \
 		echo "已停止。"; \
@@ -53,34 +53,34 @@ ci:
 	$(PYTHON) -m unittest discover -s tests
 
 status:
-	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py
+	@INKDASH_URL=$(URL) $(PYTHON) vibe_update.py
 
 heartbeat:
-	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --heartbeat
+	@INKDASH_URL=$(URL) $(PYTHON) vibe_update.py --heartbeat
 
 health:
-	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --health
+	@INKDASH_URL=$(URL) $(PYTHON) vibe_update.py --health
 
 presets:
 	@$(PYTHON) vibe_update.py --list-presets
 
 clear-blockers:
-	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --clear-blockers $(EVENT_ARG)
+	@INKDASH_URL=$(URL) $(PYTHON) vibe_update.py --clear-blockers $(EVENT_ARG)
 
 clear-participants:
-	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --clear-participants $(EVENT_ARG)
+	@INKDASH_URL=$(URL) $(PYTHON) vibe_update.py --clear-participants $(EVENT_ARG)
 
 clear-events:
-	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --clear-events $(EVENT_ARG)
+	@INKDASH_URL=$(URL) $(PYTHON) vibe_update.py --clear-events $(EVENT_ARG)
 
 preset-coding:
-	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --preset coding --from-git $(EVENT_ARG)
+	@INKDASH_URL=$(URL) $(PYTHON) vibe_update.py --preset coding --from-git $(EVENT_ARG)
 
 preset-review:
-	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --preset review $(EVENT_ARG)
+	@INKDASH_URL=$(URL) $(PYTHON) vibe_update.py --preset review $(EVENT_ARG)
 
 preset-blocked:
-	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --preset blocked $(BLOCKER_ARG) $(EVENT_ARG)
+	@INKDASH_URL=$(URL) $(PYTHON) vibe_update.py --preset blocked $(BLOCKER_ARG) $(EVENT_ARG)
 
 preset-done:
-	@KINDLEVIBE_URL=$(URL) $(PYTHON) vibe_update.py --preset done $(EVENT_ARG)
+	@INKDASH_URL=$(URL) $(PYTHON) vibe_update.py --preset done $(EVENT_ARG)

@@ -1,0 +1,14 @@
+[Unit]
+Description=InkDash 墨板 - 电子墨水屏状态面板
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/InkDash
+ExecStart=/usr/bin/python3 app.py --host 0.0.0.0 --port 8080
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

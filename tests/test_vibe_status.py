@@ -25,7 +25,7 @@ class VibeStatusTests(unittest.TestCase):
     def test_update_vibe_status_persists_patch_and_event(self):
         status = app.update_vibe_status({
             "state": "编码中",
-            "project": "KindleVibe-Python",
+            "project": "InkDash",
             "branch": "feature/vibe-board",
             "objective": "显示 vibe coding 状态",
             "participants": ["@scnet_brain", "@opencode"],
@@ -34,7 +34,7 @@ class VibeStatusTests(unittest.TestCase):
         })
 
         self.assertEqual(status["state"], "编码中")
-        self.assertEqual(status["project"], "KindleVibe-Python")
+        self.assertEqual(status["project"], "InkDash")
         self.assertEqual(status["participants"], ["@scnet_brain", "@opencode"])
         self.assertEqual(status["events"][-1]["text"], "完成状态写入接口。")
 
@@ -78,7 +78,7 @@ class VibeStatusTests(unittest.TestCase):
         usage.local_token_usage["windows"]["7d"]["cache_hit_percent"] = 25.5
         status = app.normalize_vibe_status({
             "state": "测试中",
-            "project": "KindleVibe-Python",
+            "project": "InkDash",
             "branch": "status-text",
             "objective": "提供纯文本兜底视图",
             "events": [{"time": "01:30", "text": "生成 status.txt"}],
@@ -214,7 +214,7 @@ class VibeStatusTests(unittest.TestCase):
     def test_generate_presets_text_contains_preset_summary(self):
         text = app.generate_presets_text(app.load_vibe_presets())
 
-        self.assertIn("KindleVibe Presets", text)
+        self.assertIn("InkDash Presets", text)
         self.assertIn("- coding", text)
         self.assertIn("状态：编码中", text)
         self.assertIn("下一步：", text)
