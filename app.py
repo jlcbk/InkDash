@@ -76,7 +76,7 @@ LAYOUT_MODE_LABELS = {
 }
 TEXT_SCALE_MIN = 80
 TEXT_SCALE_MAX = 200
-TEXT_SCALE_DEFAULT = 125
+TEXT_SCALE_DEFAULT = 200
 TEXT_SCALE_QUICK_VALUES = (100, 125, 150)
 PREFERENCE_COOKIE_MAX_AGE = 365 * 24 * 60 * 60
 LAYOUT_COOKIE = "inkdash_layout"
@@ -107,7 +107,7 @@ DEFAULT_CONFIG = {
         "show_plan_type": True,
         "show_data_source": True,
         "show_last_updated": True,
-        "show_vibe_board": True,
+        "show_vibe_board": False,
         "layout_mode": "auto",
         "text_scale_percent": TEXT_SCALE_DEFAULT
     }
@@ -1595,12 +1595,6 @@ def generate_main_html(
         <h1>InkDash</h1>
         <div class="subtitle">Vibe Coding 常亮状态面板 · {h(layout_label)}布局 · {text_scale_percent}%字号</div>
         <div class="header-actions">
-            <nav class="layout-switch" aria-label="布局模式">
-                {layout_switch}
-            </nav>
-            <nav class="layout-switch" aria-label="字号比例">
-                {text_scale_switch}
-            </nav>
             <a href="/settings" class="settings-btn">设置</a>
         </div>
     </header>

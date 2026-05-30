@@ -149,12 +149,6 @@ class VibeStatusTests(unittest.TestCase):
         self.assertIn('--text-scale: 1.50', html)
         self.assertIn("150%字号", html)
         self.assertIn("横屏布局", html)
-        self.assertIn('href="/layout?mode=auto"', html)
-        self.assertIn('href="/layout?mode=portrait"', html)
-        self.assertIn('href="/layout?mode=landscape"', html)
-        self.assertIn('href="/text-scale?scale=100"', html)
-        self.assertIn('href="/text-scale?scale=125"', html)
-        self.assertIn('href="/text-scale?scale=150"', html)
         self.assertIn("dashboard-layout", html)
 
     def test_normalize_layout_mode_falls_back_to_auto(self):
