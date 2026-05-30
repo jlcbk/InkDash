@@ -190,7 +190,7 @@ class VibeUpdateTests(unittest.TestCase):
         summary = vibe_update.format_health_summary({
             "status": "ok",
             "checked_at": "2026-05-29 02:20:00",
-            "vibe": {
+            "status_board": {
                 "state": "运行中",
                 "stale": False,
                 "updated_at": "2026-05-29 02:19:00",
@@ -202,7 +202,7 @@ class VibeUpdateTests(unittest.TestCase):
         })
 
         self.assertIn("服务：ok", summary)
-        self.assertIn("Vibe 心跳：正常", summary)
+        self.assertIn("状态心跳：正常", summary)
         self.assertIn("Codex 数据来源：session", summary)
 
     def test_wait_for_health_returns_after_retry(self):

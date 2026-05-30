@@ -12,7 +12,7 @@
     "source": "auto",
     "session_file_limit": 10
   },
-  "vibe": {
+  "status": {
     "stale_after_seconds": 900
   },
   "security": {

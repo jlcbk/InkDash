@@ -146,8 +146,9 @@ curl http://localhost:8080/api/health
 | --- | --- |
 | `status` | 服务状态，目前正常时为 `ok`。 |
 | `checked_at` | 检查时间。 |
-| `vibe.stale` | 当前 Vibe 状态是否可能过期。 |
-| `vibe.stale_after_seconds` | 状态过期阈值。 |
+| `status_board.stale` | 当前状态看板是否可能过期。 |
+| `status_board.stale_after_seconds` | 状态过期阈值。 |
+| `vibe` | `status_board` 的兼容别名，供旧监控脚本使用。 |
 | `codex.source` | Codex 用量数据来源。 |
 | `codex.error` | Codex 数据错误信息。 |
 

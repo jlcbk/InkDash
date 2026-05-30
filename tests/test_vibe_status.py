@@ -196,9 +196,42 @@ class VibeStatusTests(unittest.TestCase):
         health = app.build_health_status(usage, status)
 
         self.assertEqual(health["status"], "ok")
+        self.assertEqual(health["status_board"]["state"], "运行中")
+        self.assertFalse(health["status_board"]["stale"])
         self.assertEqual(health["vibe"]["state"], "运行中")
         self.assertFalse(health["vibe"]["stale"])
         self.assertEqual(health["codex"]["source"], "session")
+
+    def test_config_migration_copies_legacy_vibe_stale_setting(self):
+        merged = app.migrate_config(
+            app.merge_configs(app.DEFAULT_CONFIG, {
+                "vibe": {"stale_after_seconds": 1234},
+            }),
+            {"vibe": {"stale_after_seconds": 1234}},
+        )
+
+        self.assertEqual(merged["status"]["stale_after_seconds"], 1234)
+
+    def test_config_migration_prefers_explicit_status_setting(self):
+        merged = app.migrate_config(
+            app.merge_configs(app.DEFAULT_CONFIG, {
+                "status": {"stale_after_seconds": 2222},
+                "vibe": {"stale_after_seconds": 1234},
+            }),
+            {
+                "status": {"stale_after_seconds": 2222},
+                "vibe": {"stale_after_seconds": 1234},
+            },
+        )
+
+        self.assertEqual(merged["status"]["stale_after_seconds"], 2222)
+
+    def test_setup_logging_does_not_duplicate_handlers(self):
+        handler_count = len(app.logger.handlers)
+        app.setup_logging()
+        app.setup_logging()
+
+        self.assertEqual(len(app.logger.handlers), handler_count)
 
     def test_load_vibe_presets_exposes_payloads(self):
         presets = app.load_vibe_presets()

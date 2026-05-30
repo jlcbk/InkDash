@@ -70,8 +70,8 @@ http://<你的局域网 IP>:8080
 curl -X POST http://localhost:8080/api/status \
   -H 'Content-Type: application/json' \
   -d '{
-    "state": "编码中",
-     "project": "InkDash",
+	    "state": "编码中",
+	    "project": "InkDash",
 	    "branch": "feature/status-board",
 	    "objective": "把 Kindle 变成常亮状态屏",
     "current_task": "实现通用状态写入接口",
@@ -265,7 +265,7 @@ make clear-events EVENT="开始新一轮状态记录。"
     "source": "auto",
     "session_file_limit": 10
   },
-  "vibe": {
+  "status": {
     "stale_after_seconds": 900
   },
   "security": {
@@ -295,7 +295,7 @@ make clear-events EVENT="开始新一轮状态记录。"
 - `POST /api/status`：更新可选状态看板内容。
 - `GET /api/vibe`：读取状态的兼容别名，供旧脚本使用。
 - `POST /api/vibe`：更新状态的兼容别名，供旧脚本使用。
-- `GET /api/health`：健康检查，返回服务状态、vibe 状态是否过期、Codex 数据是否报错。
+- `GET /api/health`：健康检查，返回服务状态、状态看板是否过期、Codex 数据是否报错。
 - `GET /api/presets`：读取内置状态包模板摘要和原始 payload。
 - `GET /api/usage`：读取 Codex 用量。
 - `GET /api/config`：读取当前配置；如果配置了 `security.api_token`，该字段会脱敏显示。

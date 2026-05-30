@@ -42,7 +42,6 @@ def setup_logging():
     """Configure logging with both file and console handlers."""
     logger = logging.getLogger("InkDash")
     logger.setLevel(logging.DEBUG)
-    
     if logger.handlers:
         return logger
     
@@ -112,7 +111,7 @@ DEFAULT_CONFIG = {
         "source": "auto",
         "session_file_limit": 10
     },
-    "vibe": {
+    "status": {
         "stale_after_seconds": 900
     },
     "security": {
@@ -135,10 +134,10 @@ def load_config() -> Dict[str, Any]:
     try:
         if CONFIG_FILE.exists():
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-                config = json.load(f)
+                loaded_config = json.load(f)
             logger.info(f"Configuration loaded from {CONFIG_FILE}")
             # Merge with defaults to ensure all keys exist
-            return merge_configs(DEFAULT_CONFIG, config)
+            return migrate_config(merge_configs(DEFAULT_CONFIG, loaded_config), loaded_config)
         else:
             logger.info("Config file not found, creating default configuration")
             save_config(DEFAULT_CONFIG)
@@ -169,6 +168,16 @@ def merge_configs(default: Dict, override: Dict) -> Dict:
         else:
             result[key] = value
     return result
+
+
+def migrate_config(config: Dict[str, Any], loaded_config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Apply compatibility migrations for renamed config keys."""
+    loaded_config = loaded_config or {}
+    if "status" not in loaded_config and isinstance(loaded_config.get("vibe"), dict):
+        legacy_stale_after = loaded_config["vibe"].get("stale_after_seconds")
+        if legacy_stale_after is not None:
+            config.setdefault("status", {})["stale_after_seconds"] = legacy_stale_after
+    return config
 
 
 def normalize_layout_mode(value: Any) -> str:
@@ -232,18 +241,25 @@ def tokens_match(expected: str, supplied: str) -> bool:
     return bool(expected) and supplied == expected
 
 
-def vibe_stale_after_seconds() -> int:
+def status_stale_after_seconds() -> int:
     """Return the heartbeat freshness threshold."""
-    value = config.get("vibe", {}).get("stale_after_seconds", 900)
+    value = config.get("status", {}).get("stale_after_seconds")
+    if value is None:
+        value = config.get("vibe", {}).get("stale_after_seconds", 900)
     try:
         return max(60, int(value))
     except (TypeError, ValueError):
         return 900
 
 
+def vibe_stale_after_seconds() -> int:
+    """Compatibility wrapper for the old status freshness helper name."""
+    return status_stale_after_seconds()
+
+
 def is_vibe_status_stale(status: Dict[str, Any], now: Optional[datetime] = None) -> bool:
     """Return true when the displayed status has not been updated recently."""
-    return is_status_stale(status, vibe_stale_after_seconds(), now)
+    return is_status_stale(status, status_stale_after_seconds(), now)
 
 
 def load_vibe_status() -> Dict[str, Any]:
@@ -256,7 +272,7 @@ def load_vibe_status() -> Dict[str, Any]:
                     return normalize_vibe_status(json.load(f))
         except Exception as e:
             logger.warning(f"Failed to load vibe status: {e}")
-    return default_vibe_status()
+        return default_vibe_status()
 
 
 def save_vibe_status(status: Dict[str, Any]) -> bool:
@@ -1746,15 +1762,17 @@ def generate_presets_text(presets: list) -> str:
 
 def build_health_status(usage: CodexUsage, vibe_status: Dict[str, Any]) -> Dict[str, Any]:
     """Build a compact health payload for agents and monitoring scripts."""
+    status_board = {
+        "state": vibe_status.get("state", ""),
+        "updated_at": vibe_status.get("updated_at", ""),
+        "stale": is_vibe_status_stale(vibe_status),
+        "stale_after_seconds": status_stale_after_seconds(),
+    }
     return {
         "status": "ok",
         "checked_at": now_display(),
-        "vibe": {
-            "state": vibe_status.get("state", ""),
-            "updated_at": vibe_status.get("updated_at", ""),
-            "stale": is_vibe_status_stale(vibe_status),
-            "stale_after_seconds": vibe_stale_after_seconds(),
-        },
+        "status_board": status_board,
+        "vibe": status_board,
         "codex": {
             "source": usage.source,
             "last_updated": usage.last_updated,
@@ -1778,8 +1796,8 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
     refresh_interval = config.get("refresh", {}).get("interval_seconds", 300)
     refresh_page = config.get("refresh", {}).get("auto_refresh_page_ms", 300000) // 1000
 
-    # Vibe settings
-    stale_after_seconds = config.get("vibe", {}).get("stale_after_seconds", 900)
+    # Status board settings
+    stale_after_seconds = status_stale_after_seconds()
     
     # Codex settings
     codex_enabled = config.get("codex", {}).get("enabled", True)
@@ -2331,11 +2349,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                     limit = int(params["session_limit"][0])
                     config["codex"]["session_file_limit"] = max(1, min(100, limit))
 
-                # Update vibe settings
-                config.setdefault("vibe", {})
+                # Update status board settings
+                config.setdefault("status", {})
                 if "stale_after_seconds" in params:
                     stale_after = int(params["stale_after_seconds"][0])
-                    config["vibe"]["stale_after_seconds"] = max(60, min(86400, stale_after))
+                    config["status"]["stale_after_seconds"] = max(60, min(86400, stale_after))
+                    config.pop("vibe", None)
                 
                 # Update display settings
                 config["display"]["show_plan_type"] = "show_plan_type" in params

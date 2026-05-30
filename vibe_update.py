@@ -332,17 +332,17 @@ def format_summary(status: Dict[str, Any]) -> str:
 
 
 def format_health_summary(health: Dict[str, Any]) -> str:
-    vibe = health.get("vibe") or {}
+    status_board = health.get("status_board") or health.get("vibe") or {}
     codex = health.get("codex") or {}
     codex_error = codex.get("error") or "无"
-    stale = "可能过期" if vibe.get("stale") else "正常"
+    stale = "可能过期" if status_board.get("stale") else "正常"
 
     lines = [
         f"服务：{health.get('status', '未知')}",
         f"检查时间：{health.get('checked_at', '未知')}",
-        f"Vibe 状态：{vibe.get('state', '未知')}",
-        f"Vibe 心跳：{stale}",
-        f"Vibe 更新时间：{vibe.get('updated_at', '未知')}",
+        f"状态看板：{status_board.get('state', '未知')}",
+        f"状态心跳：{stale}",
+        f"状态更新时间：{status_board.get('updated_at', '未知')}",
         f"Codex 数据来源：{codex.get('source', '未知')}",
         f"Codex 错误：{codex_error}",
     ]
