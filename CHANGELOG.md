@@ -12,11 +12,11 @@
 - Cookie 名 `inkdash_layout` / `inkdash_text_scale` 替代 `kindlevibe_layout` / `kindlevibe_text_scale`。
 - 示例 systemd 单元和 launchd plist 改为 `examples/systemd/inkdash.service` / `examples/launchd/com.inkdash.plist`。
 - 日志文件路径改为 `logs/inkdash.log`。
-- 状态文件主路径改为 `inkdash_status.json`，历史 `vibe_status.json` 作为兼容回退读取。
+- 状态文件主路径改为 `inkdash_status.json`，配置主键改为 `status.stale_after_seconds`，历史 `vibe_status.json` 和 `vibe.stale_after_seconds` 作为兼容回退读取。
 
 ### 新增
 
-- Kindle 友好的 Vibe Coding 主看板，展示目标、项目、分支、当前任务、下一步、参与者、阻塞项和最近事件。
+- Kindle 友好的协作状态看板，展示目标、项目、分支、当前任务、下一步、参与者、阻塞项和最近事件。
 - `GET /api/status` / `POST /api/status` 状态读取与写入接口，旧 `/api/vibe` 继续作为兼容别名。
 - `vibe_update.py` CLI，支持状态写入、心跳、健康检查、等待健康检查、JSON 输出、从 Git 自动填充上下文、从 JSON 状态包读取、环境变量配置 URL/token。
 - `GET /status.txt` 纯文本兜底页。

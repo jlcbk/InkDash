@@ -255,7 +255,7 @@ http://<电脑局域网 IP>:8080/presets.txt
 
 ## 过期提示
 
-看板会根据 `vibe.stale_after_seconds` 判断状态是否可能过期。默认值是 900 秒。
+看板会根据 `status.stale_after_seconds` 判断状态是否可能过期。默认值是 900 秒；旧配置中的 `vibe.stale_after_seconds` 仍会被兼容读取。
 
 可以在浏览器的 `/settings` 页面修改这个值。建议：
 

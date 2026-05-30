@@ -42,3 +42,11 @@ class ExamplePayloadTests(unittest.TestCase):
         }
 
         self.assertEqual(payload_names, set(vibe_update.PRESET_NAMES))
+
+    def test_legacy_status_example_uses_current_wording(self):
+        payload = json.loads((ROOT / "vibe_status.example.json").read_text(encoding="utf-8"))
+        combined_text = json.dumps(payload, ensure_ascii=False)
+
+        self.assertNotIn("Vibe Coding", combined_text)
+        self.assertNotIn("vibe coding", combined_text)
+        self.assertIn("/api/status", combined_text)

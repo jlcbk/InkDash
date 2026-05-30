@@ -72,7 +72,7 @@ tail -n 80 logs/inkdash.log
 | 现象 | 检查 |
 | --- | --- |
 | Kindle 页面不更新 | 请求 `/status.txt`，确认 no-cache 响应和 `updated_at`。 |
-| 状态显示可能过期 | 用 `make heartbeat` 刷新，或调整 `vibe.stale_after_seconds`。 |
+| 状态显示可能过期 | 用 `make heartbeat` 刷新，或调整 `status.stale_after_seconds`。 |
 | 写入返回 401 | 检查 `INKDASH_TOKEN`（兼容旧名 `KINDLEVIBE_TOKEN`）或 `X-InkDash-Token`（兼容旧名 `X-KindleVibe-Token`）。 |
 | Codex 用量为空 | 检查 Codex CLI 登录状态和 `logs/inkdash.log`。 |
 | preset 不一致 | 运行 `make presets`，再检查 `examples/payloads/` 和测试。 |
