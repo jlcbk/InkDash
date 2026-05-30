@@ -103,9 +103,9 @@ DEFAULT_CONFIG = {
         "api_token": ""
     },
     "display": {
-        "show_credits": True,
+        "show_credits": False,
         "show_plan_type": True,
-        "show_data_source": True,
+        "show_data_source": False,
         "show_last_updated": True,
         "show_vibe_board": False,
         "layout_mode": "auto",
@@ -1834,6 +1834,10 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
     show_vibe = display.get("show_vibe_board", True)
     layout_mode = normalize_layout_mode(display.get("layout_mode", "auto"))
     text_scale_percent = normalize_text_scale(display.get("text_scale_percent", TEXT_SCALE_DEFAULT))
+    text_scale_ratio = text_scale_percent / 100.0
+    
+    def scaled(px: int) -> str:
+        return f"{round(px * text_scale_ratio)}px"
     
     def checked(val):
         return "checked" if val else ""
@@ -1856,6 +1860,7 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
         
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: {scaled(16)};
             background: #ffffff;
             color: #000000;
             padding: 20px;
@@ -2094,7 +2099,7 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
             <div class="form-group">
                 <label for="text_scale_percent">默认字号比例（%）：</label>
                 <input type="number" id="text_scale_percent" name="text_scale_percent" value="{text_scale_percent}" min="{TEXT_SCALE_MIN}" max="{TEXT_SCALE_MAX}" step="5">
-                <div class="help-text">这是没有浏览器独立偏好时的默认字号；主页面顶部的 100% / 125% / 150% 会保存到当前浏览器，不影响其他终端。</div>
+                <div class="help-text">设置独立于主页面 URL 偏好（?text_scale=200），不影响其他终端。</div>
             </div>
             
             <div class="form-group">
