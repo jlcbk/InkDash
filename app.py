@@ -250,11 +250,37 @@ def current_text_scale() -> int:
     )
 
 
+def config_bool(value: Any, default: bool = False) -> bool:
+    """Return a boolean for config values that may be hand-edited as strings."""
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return default
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "on", "y"}:
+            return True
+        if normalized in {"0", "false", "no", "off", "n", ""}:
+            return False
+        return default
+    if isinstance(value, (int, float)):
+        return bool(value)
+    return default
+
+
+def display_flag(display: Dict[str, Any], key: str) -> bool:
+    """Return a display flag using DEFAULT_CONFIG as the fallback source."""
+    return config_bool(
+        display.get(key),
+        bool(DEFAULT_CONFIG.get("display", {}).get(key, False)),
+    )
+
+
 def display_status_board_enabled(display: Dict[str, Any]) -> bool:
     """Return the status-board display flag, accepting the legacy key."""
     if "show_status_board" in display:
-        return bool(display.get("show_status_board"))
-    return bool(display.get("show_vibe_board", True))
+        return config_bool(display.get("show_status_board"), False)
+    return config_bool(display.get("show_vibe_board"), True)
 
 
 # Global config
@@ -1077,28 +1103,28 @@ def generate_main_html(
     </section>'''
 
     account_info_rows = ""
-    if display.get("show_plan_type", True):
+    if display_flag(display, "show_plan_type"):
         account_info_rows += f'''
         <div class="info-row">
             <span class="info-label">套餐</span>
             <span class="info-value">{h(plan_type)}</span>
         </div>'''
 
-    if display.get("show_credits", True):
+    if display_flag(display, "show_credits"):
         account_info_rows += f'''
         <div class="info-row">
             <span class="info-label">余额</span>
             <span class="info-value">{h(credits)}</span>
         </div>'''
 
-    if display.get("show_data_source", True):
+    if display_flag(display, "show_data_source"):
         account_info_rows += f'''
         <div class="info-row">
             <span class="info-label">数据来源</span>
             <span class="info-value">{h(source)}</span>
         </div>'''
 
-    if display.get("show_last_updated", True):
+    if display_flag(display, "show_last_updated"):
         account_info_rows += f'''
         <div class="info-row">
             <span class="info-label">更新时间</span>
@@ -1903,10 +1929,10 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
     
     # Display settings
     display = config.get("display", {})
-    show_credits = display.get("show_credits", True)
-    show_plan = display.get("show_plan_type", True)
-    show_source = display.get("show_data_source", True)
-    show_updated = display.get("show_last_updated", True)
+    show_credits = display_flag(display, "show_credits")
+    show_plan = display_flag(display, "show_plan_type")
+    show_source = display_flag(display, "show_data_source")
+    show_updated = display_flag(display, "show_last_updated")
     show_status = display_status_board_enabled(display)
     layout_mode = normalize_layout_mode(display.get("layout_mode", "auto"))
     text_scale_percent = normalize_text_scale(display.get("text_scale_percent", TEXT_SCALE_DEFAULT))
