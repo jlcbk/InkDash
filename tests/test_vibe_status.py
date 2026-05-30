@@ -209,6 +209,32 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(app.normalize_text_scale("999"), app.TEXT_SCALE_MAX)
         self.assertEqual(app.normalize_text_scale("bad-value"), app.TEXT_SCALE_DEFAULT)
 
+    def test_refresh_helpers_clamp_invalid_config_values(self):
+        self.assertEqual(app.refresh_interval_seconds("bad-value"), 300)
+        self.assertEqual(app.refresh_interval_seconds(5), 30)
+        self.assertEqual(app.refresh_interval_seconds(99999), 3600)
+        self.assertEqual(app.page_refresh_seconds("bad-value"), 300)
+        self.assertEqual(app.page_refresh_seconds(5000), 30)
+        self.assertEqual(app.page_refresh_seconds(99999999), 3600)
+
+    def test_pages_tolerate_invalid_refresh_config_values(self):
+        original_config = app.config
+        try:
+            app.config = {
+                "refresh": {
+                    "interval_seconds": "bad-value",
+                    "auto_refresh_page_ms": "bad-value",
+                }
+            }
+            main_html = app.generate_main_html(app.CodexUsage(), app.default_vibe_status())
+            settings_html = app.generate_settings_html()
+        finally:
+            app.config = original_config
+
+        self.assertIn('http-equiv="refresh" content="300"', main_html)
+        self.assertIn('name="refresh_interval" value="300"', settings_html)
+        self.assertIn('name="refresh_page" value="300"', settings_html)
+
     def test_settings_html_exposes_stale_threshold(self):
         html = app.generate_settings_html()
 

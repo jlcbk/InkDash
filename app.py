@@ -201,6 +201,33 @@ def normalize_text_scale(value: Any) -> int:
     return max(TEXT_SCALE_MIN, min(TEXT_SCALE_MAX, scale))
 
 
+def clamp_int_range(value: Any, default: int, minimum: int, maximum: int) -> int:
+    """Return an integer clamped to a safe inclusive range."""
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        number = default
+    return max(minimum, min(maximum, number))
+
+
+def refresh_interval_seconds(value: Any = None) -> int:
+    """Return a safe background refresh interval in seconds."""
+    if value is None:
+        value = config.get("refresh", {}).get("interval_seconds", 300)
+    return clamp_int_range(value, 300, 30, 3600)
+
+
+def page_refresh_seconds(value: Any = None) -> int:
+    """Return a safe browser refresh interval in seconds."""
+    if value is None:
+        value = config.get("refresh", {}).get("auto_refresh_page_ms", 300000)
+    try:
+        seconds = int(value) // 1000
+    except (TypeError, ValueError):
+        seconds = 300
+    return clamp_int_range(seconds, 300, 30, 3600)
+
+
 def current_text_scale() -> int:
     """Return the configured dashboard text scale percentage."""
     return normalize_text_scale(
@@ -862,7 +889,7 @@ def refresh_cache():
     
     while True:
         try:
-            interval = config.get("refresh", {}).get("interval_seconds", 300)
+            interval = refresh_interval_seconds()
             
             new_usage = fetch_codex_usage()
             with cache_lock:
@@ -960,7 +987,7 @@ def generate_main_html(
     credits = usage.credits if usage.credits else "未知"
     source = usage.source if usage.source else "未知"
     last_updated = usage.last_updated if usage.last_updated else "从未更新"
-    refresh_ms = config.get("refresh", {}).get("auto_refresh_page_ms", 300000)
+    refresh_ms = page_refresh_seconds() * 1000
     layout_mode = normalize_layout_mode(layout_mode or current_layout_mode())
     layout_label = LAYOUT_MODE_LABELS.get(layout_mode, "自动")
     text_scale_percent = normalize_text_scale(
@@ -1848,8 +1875,8 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
     server_host = config.get("server", {}).get("host", "0.0.0.0")
     
     # Refresh settings
-    refresh_interval = config.get("refresh", {}).get("interval_seconds", 300)
-    refresh_page = config.get("refresh", {}).get("auto_refresh_page_ms", 300000) // 1000
+    refresh_interval = refresh_interval_seconds()
+    refresh_page = page_refresh_seconds()
 
     # Status board settings
     stale_after_seconds = status_stale_after_seconds()
