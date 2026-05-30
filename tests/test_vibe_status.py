@@ -569,6 +569,21 @@ class VibeStatusTests(unittest.TestCase):
     def test_display_status_board_prefers_new_key_with_legacy_fallback(self):
         self.assertTrue(app.display_status_board_enabled({"show_vibe_board": True}))
         self.assertFalse(app.display_status_board_enabled({"show_status_board": False, "show_vibe_board": True}))
+        self.assertFalse(app.display_status_board_enabled({"show_status_board": "false"}))
+        self.assertTrue(app.display_status_board_enabled({"show_status_board": "true"}))
+
+    def test_display_flags_parse_string_booleans(self):
+        display = {
+            "show_plan_type": "true",
+            "show_credits": "false",
+            "show_data_source": "0",
+            "show_last_updated": "no",
+        }
+
+        self.assertTrue(app.display_flag(display, "show_plan_type"))
+        self.assertFalse(app.display_flag(display, "show_credits"))
+        self.assertFalse(app.display_flag(display, "show_data_source"))
+        self.assertFalse(app.display_flag(display, "show_last_updated"))
 
     def test_settings_page_uses_status_board_field_name(self):
         html = app.generate_settings_html()
