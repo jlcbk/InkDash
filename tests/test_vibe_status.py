@@ -149,6 +149,13 @@ class VibeStatusTests(unittest.TestCase):
         self.assertIn('--text-scale: 1.50', html)
         self.assertIn("150%字号", html)
         self.assertIn("横屏布局", html)
+        self.assertIn('href="/layout?mode=auto"', html)
+        self.assertIn('href="/layout?mode=portrait"', html)
+        self.assertIn('href="/layout?mode=landscape"', html)
+        self.assertIn('href="/text-scale?scale=100"', html)
+        self.assertIn('href="/text-scale?scale=125"', html)
+        self.assertIn('href="/text-scale?scale=150"', html)
+        self.assertIn('href="/text-scale?scale=200"', html)
         self.assertIn("dashboard-layout", html)
 
     def test_normalize_layout_mode_falls_back_to_auto(self):
@@ -295,6 +302,41 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(window_7d["cache_hit_percent"], 30.0)
         self.assertEqual(window_7d["event_count"], 2)
         self.assertEqual(window_7d["session_count"], 2)
+
+    def test_main_html_has_grid_supports_fallback(self):
+        html = app.generate_main_html(
+            app.CodexUsage(),
+            app.default_vibe_status(),
+        )
+        self.assertIn("@supports (display: grid)", html)
+        self.assertIn(".dashboard-layout", html)
+
+    def test_landscape_narrow_no_min_width_overflow(self):
+        html = app.generate_main_html(
+            app.CodexUsage(),
+            app.default_vibe_status(),
+            layout_mode="landscape",
+        )
+        self.assertNotIn("min-width: 920px", html)
+        self.assertIn("layout-landscape", html)
+
+    def test_settings_page_escapes_dynamic_html(self):
+        html = app.generate_settings_html(message="<script>alert(1)</script>")
+        self.assertIn("&lt;script&gt;", html)
+        self.assertNotIn("<script>", html)
+
+    def test_settings_page_escapes_host_value(self):
+        host = '"><script>alert(1)</script>'
+        original_config = app.config
+        try:
+            app.config = app.merge_configs(app.DEFAULT_CONFIG, {
+                "server": {"host": host}
+            })
+            html = app.generate_settings_html()
+        finally:
+            app.config = original_config
+        self.assertIn("&lt;script&gt;", html)
+        self.assertNotIn("<script>alert", html)
 
 
 if __name__ == "__main__":

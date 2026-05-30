@@ -76,8 +76,8 @@ LAYOUT_MODE_LABELS = {
 }
 TEXT_SCALE_MIN = 80
 TEXT_SCALE_MAX = 200
-TEXT_SCALE_DEFAULT = 200
-TEXT_SCALE_QUICK_VALUES = (100, 125, 150)
+TEXT_SCALE_DEFAULT = 125
+TEXT_SCALE_QUICK_VALUES = (100, 125, 150, 200)
 PREFERENCE_COOKIE_MAX_AGE = 365 * 24 * 60 * 60
 LAYOUT_COOKIE = "inkdash_layout"
 TEXT_SCALE_COOKIE = "inkdash_text_scale"
@@ -1206,16 +1206,30 @@ def generate_main_html(
         }}
 
         .dashboard-layout {{
-            display: grid;
-            grid-template-columns: minmax(0, 1fr);
+            /* block fallback for old Kindle WebKit */
+            display: block;
             gap: 18px;
-            align-items: start;
+        }}
+
+        @supports (display: grid) {{
+            .dashboard-layout {{
+                display: grid;
+                grid-template-columns: minmax(0, 1fr);
+                gap: 18px;
+                align-items: start;
+            }}
         }}
 
         .usage-stack {{
-            display: grid;
-            gap: 18px;
-            min-width: 0;
+            display: block;
+        }}
+
+        @supports (display: grid) {{
+            .usage-stack {{
+                display: grid;
+                gap: 18px;
+                min-width: 0;
+            }}
         }}
 
         .dashboard-layout > .usage-stack:only-child {{
@@ -1296,18 +1310,30 @@ def generate_main_html(
         }}
 
         .fact-grid {{
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            border-top: 1px solid #000000;
-            border-left: 1px solid #000000;
-            margin-bottom: 16px;
+            display: block;
         }}
 
-        .fact {{
+        .fact-grid .fact {{
             min-height: 86px;
             border-right: 1px solid #000000;
             border-bottom: 1px solid #000000;
             padding: 10px;
+        }}
+
+        @supports (display: grid) {{
+            .fact-grid {{
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                border-top: 1px solid #000000;
+                border-left: 1px solid #000000;
+                margin-bottom: 16px;
+            }}
+
+            .fact-grid .fact {{
+                border-right: 1px solid #000000;
+                border-bottom: 1px solid #000000;
+                padding: 10px;
+            }}
         }}
 
         .fact-label,
@@ -1326,10 +1352,17 @@ def generate_main_html(
 
         .focus-row,
         .tag-row {{
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-bottom: 16px;
+            display: block;
+        }}
+
+        @supports (display: grid) {{
+            .focus-row,
+            .tag-row {{
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 14px;
+                margin-bottom: 16px;
+            }}
         }}
 
         .large-text {{
@@ -1361,11 +1394,19 @@ def generate_main_html(
         }}
 
         .event-row {{
-            display: grid;
-            grid-template-columns: 180px 1fr;
-            gap: 12px;
+            display: block;
             padding: 9px 0;
             border-bottom: 1px solid #cccccc;
+        }}
+
+        @supports (display: grid) {{
+            .event-row {{
+                display: grid;
+                grid-template-columns: 180px 1fr;
+                gap: 12px;
+                padding: 9px 0;
+                border-bottom: 1px solid #cccccc;
+            }}
         }}
 
         .event-time {{
@@ -1381,12 +1422,20 @@ def generate_main_html(
         }}
 
         .limit-row {{
-            display: grid;
-            grid-template-columns: 180px 1fr 110px;
-            gap: 14px;
-            align-items: center;
+            display: block;
             padding: 12px 0;
             border-bottom: 1px solid #cccccc;
+        }}
+
+        @supports (display: grid) {{
+            .limit-row {{
+                display: grid;
+                grid-template-columns: 180px 1fr 110px;
+                gap: 14px;
+                align-items: center;
+                padding: 12px 0;
+                border-bottom: 1px solid #cccccc;
+            }}
         }}
 
         .limit-label {{
@@ -1425,12 +1474,20 @@ def generate_main_html(
         }}
 
         .token-row {{
-            display: grid;
-            grid-template-columns: 150px 1fr 180px;
-            gap: 12px;
-            align-items: center;
+            display: block;
             padding: 9px 0;
             border-bottom: 1px solid #cccccc;
+        }}
+
+        @supports (display: grid) {{
+            .token-row {{
+                display: grid;
+                grid-template-columns: 150px 1fr 180px;
+                gap: 12px;
+                align-items: center;
+                padding: 9px 0;
+                border-bottom: 1px solid #cccccc;
+            }}
         }}
 
         .token-window,
@@ -1486,8 +1543,10 @@ def generate_main_html(
             font-size: {scaled(16)};
         }}
 
-        .layout-landscape .dashboard-layout {{
-            grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+        @supports (display: grid) {{
+            .layout-landscape .dashboard-layout {{
+                grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+            }}
         }}
 
         .layout-landscape .panel {{
@@ -1499,8 +1558,10 @@ def generate_main_html(
                 max-width: 1180px;
             }}
 
-            .layout-auto .dashboard-layout {{
-                grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+            @supports (display: grid) {{
+                .layout-auto .dashboard-layout {{
+                    grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+                }}
             }}
 
             .layout-auto .panel {{
@@ -1529,13 +1590,15 @@ def generate_main_html(
                 padding: 8px 10px;
             }}
 
-            .fact-grid,
-            .focus-row,
-            .tag-row,
-            .limit-row,
-            .token-row,
-            .event-row {{
-                grid-template-columns: 1fr;
+            @supports (display: grid) {{
+                .fact-grid,
+                .focus-row,
+                .tag-row,
+                .limit-row,
+                .token-row,
+                .event-row {{
+                    grid-template-columns: 1fr;
+                }}
             }}
 
             .main-objective {{
@@ -1545,26 +1608,46 @@ def generate_main_html(
 
         @media (max-width: 720px) {{
             .layout-landscape {{
-                min-width: 920px;
                 max-width: 1180px;
             }}
 
-            .layout-landscape .dashboard-layout {{
-                grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+            @supports (display: grid) {{
+                .layout-landscape .dashboard-layout {{
+                    grid-template-columns: 1fr;
+                }}
+
+                .layout-landscape .fact-grid {{
+                    grid-template-columns: 1fr 1fr;
+                }}
+
+                .layout-landscape .focus-row,
+                .layout-landscape .tag-row {{
+                    grid-template-columns: 1fr;
+                }}
+
+                .layout-landscape .limit-row {{
+                    grid-template-columns: 1fr;
+                }}
+
+                .layout-landscape .token-row {{
+                    grid-template-columns: 1fr;
+                }}
+
+                .layout-landscape .event-row {{
+                    grid-template-columns: 1fr;
+                }}
             }}
 
             .layout-landscape .header-actions {{
-                position: absolute;
-                top: 0;
-                right: 0;
-                margin-top: 0;
-                justify-content: flex-end;
+                position: static;
+                margin-top: 12px;
+                justify-content: flex-start;
             }}
 
             .layout-landscape .settings-btn,
             .layout-landscape .layout-option {{
-                font-size: {scaled(18)};
-                padding: 9px 10px;
+                font-size: {scaled(16)};
+                padding: 8px 10px;
             }}
 
             .layout-landscape .fact-grid {{
@@ -1595,6 +1678,12 @@ def generate_main_html(
         <h1>InkDash</h1>
         <div class="subtitle">Vibe Coding 常亮状态面板 · {h(layout_label)}布局 · {text_scale_percent}%字号</div>
         <div class="header-actions">
+            <nav class="layout-switch" aria-label="布局模式">
+                {layout_switch}
+            </nav>
+            <nav class="layout-switch" aria-label="字号比例">
+                {text_scale_switch}
+            </nav>
             <a href="/settings" class="settings-btn">设置</a>
         </div>
     </header>
@@ -1807,7 +1896,7 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
     msg_html = ""
     if message:
         msg_class = "success" if message_type == "success" else "error"
-        msg_html = f'<div class="{msg_class}">{message}</div>'
+        msg_html = f'<div class="{msg_class}">{escape(message)}</div>'
     
     # Server settings
     server_port = config.get("server", {}).get("port", 8080)
@@ -2025,7 +2114,7 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
             
             <div class="form-group">
                 <label for="host">监听地址：</label>
-                <input type="text" id="host" name="host" value="{server_host}">
+                <input type="text" id="host" name="host" value="{escape(server_host)}">
                 <div class="help-text">使用 0.0.0.0 可让同一局域网内的 Kindle 访问。</div>
             </div>
         </div>
