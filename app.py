@@ -707,15 +707,22 @@ def compute_local_token_usage(
                         event = json.loads(line)
                     except json.JSONDecodeError:
                         continue
+                    if not isinstance(event, dict):
+                        continue
                     if event.get("type") != "event_msg":
                         continue
                     payload = event.get("payload", {})
+                    if not isinstance(payload, dict):
+                        continue
                     if payload.get("type") != "token_count":
                         continue
                     event_time = parse_codex_timestamp(event.get("timestamp"))
                     if not event_time:
                         continue
-                    last_usage = payload.get("info", {}).get("last_token_usage", {})
+                    info = payload.get("info", {})
+                    if not isinstance(info, dict):
+                        continue
+                    last_usage = info.get("last_token_usage", {})
                     if not isinstance(last_usage, dict):
                         continue
                     for key, cutoff in cutoffs.items():
@@ -970,37 +977,59 @@ def fetch_codex_status_session() -> CodexUsage:
     
     for session_file in session_files:
         try:
-            with open(session_file, 'r') as f:
+            with open(session_file, "r", encoding="utf-8") as f:
                 for line in f:
                     try:
                         event = json.loads(line)
-                        if (event.get("type") == "event_msg" and 
-                            event.get("payload", {}).get("type") == "token_count"):
-                            
-                            rate_limits = event.get("payload", {}).get("rate_limits", {})
-                            primary = rate_limits.get("primary", {})
-                            secondary = rate_limits.get("secondary", {})
-                            
-                            if primary.get("window_minutes") or secondary.get("window_minutes"):
-                                usage.five_hour_percent_left = 100 - int(primary.get("used_percent", 0))
-                                usage.weekly_percent_left = 100 - int(secondary.get("used_percent", 0))
-                                
-                                if primary.get("resets_at"):
-                                    reset_dt = datetime.fromtimestamp(primary["resets_at"])
-                                    usage.five_hour_reset = reset_dt.strftime("%H:%M")
-                                
-                                if secondary.get("resets_at"):
-                                    reset_dt = datetime.fromtimestamp(secondary["resets_at"])
-                                    usage.weekly_reset = reset_dt.strftime("%m-%d %H:%M")
-                                
-                                plan_type = rate_limits.get("plan_type", "")
-                                if plan_type:
-                                    usage.plan_type = plan_type.capitalize()
-                                
-                                logger.info(f"Codex usage fetched from session: 5h={usage.five_hour_percent_left}%, weekly={usage.weekly_percent_left}%")
-                                return usage
                     except json.JSONDecodeError:
                         continue
+                    if not isinstance(event, dict):
+                        continue
+                    if event.get("type") != "event_msg":
+                        continue
+                    payload = event.get("payload", {})
+                    if not isinstance(payload, dict) or payload.get("type") != "token_count":
+                        continue
+
+                    rate_limits = payload.get("rate_limits", {})
+                    if not isinstance(rate_limits, dict):
+                        continue
+                    primary = rate_limits.get("primary", {})
+                    secondary = rate_limits.get("secondary", {})
+                    if not isinstance(primary, dict):
+                        primary = {}
+                    if not isinstance(secondary, dict):
+                        secondary = {}
+
+                    if not primary.get("window_minutes") and not secondary.get("window_minutes"):
+                        continue
+
+                    try:
+                        usage.five_hour_percent_left = 100 - int(primary.get("used_percent", 0))
+                        usage.weekly_percent_left = 100 - int(secondary.get("used_percent", 0))
+                    except (TypeError, ValueError):
+                        continue
+
+                    if primary.get("resets_at"):
+                        try:
+                            reset_dt = datetime.fromtimestamp(primary["resets_at"])
+                            usage.five_hour_reset = reset_dt.strftime("%H:%M")
+                        except (TypeError, ValueError, OSError, OverflowError):
+                            pass
+
+                    if secondary.get("resets_at"):
+                        try:
+                            reset_dt = datetime.fromtimestamp(secondary["resets_at"])
+                            usage.weekly_reset = reset_dt.strftime("%m-%d %H:%M")
+                        except (TypeError, ValueError, OSError, OverflowError):
+                            pass
+
+                    plan_type = rate_limits.get("plan_type", "")
+                    if plan_type:
+                        usage.plan_type = str(plan_type).capitalize()
+
+                    logger.info(f"Codex usage fetched from session: 5h={usage.five_hour_percent_left}%, weekly={usage.weekly_percent_left}%")
+                    return usage
         except Exception as e:
             logger.warning(f"Error reading session file {session_file}: {e}")
             continue
