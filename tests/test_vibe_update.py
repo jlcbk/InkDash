@@ -13,6 +13,20 @@ sys.path.insert(0, str(ROOT))
 import vibe_update  # noqa: E402
 
 
+class FakeResponse:
+    def __init__(self, body: bytes):
+        self.body = body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, traceback):
+        return False
+
+    def read(self):
+        return self.body
+
+
 class VibeUpdateTests(unittest.TestCase):
     def test_build_payload_maps_cli_fields(self):
         args = vibe_update.parse_args([
@@ -239,6 +253,24 @@ class VibeUpdateTests(unittest.TestCase):
                     wait_interval=0.1,
                     sleep_fn=lambda _: None,
                     monotonic_fn=iter([0.0, 0.0]).__next__,
+                )
+
+    def test_request_vibe_reports_invalid_json_without_traceback(self):
+        with patch("vibe_update.request.urlopen", return_value=FakeResponse(b"<html>not json</html>")):
+            with self.assertRaisesRegex(RuntimeError, "不是有效 JSON"):
+                vibe_update.request_vibe(
+                    "http://localhost:8080/api/status",
+                    None,
+                    timeout=0.1,
+                )
+
+    def test_request_vibe_rejects_non_object_json(self):
+        with patch("vibe_update.request.urlopen", return_value=FakeResponse(b"[]")):
+            with self.assertRaisesRegex(RuntimeError, "顶层必须是对象"):
+                vibe_update.request_vibe(
+                    "http://localhost:8080/api/status",
+                    None,
+                    timeout=0.1,
                 )
 
 
