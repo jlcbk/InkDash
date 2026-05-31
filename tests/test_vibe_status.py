@@ -551,6 +551,16 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(safe["security"]["api_token"], "<configured>")
         self.assertEqual(app.config, original_config)
 
+    def test_security_helpers_tolerate_invalid_security_section(self):
+        original_config = app.config
+        try:
+            app.config = {"security": "not-an-object"}
+
+            self.assertEqual(app.configured_api_token(), "")
+            self.assertEqual(app.public_config()["security"], {})
+        finally:
+            app.config = original_config
+
     def test_compute_local_token_usage_sums_recent_last_usage(self):
         codex_home = Path(self.tmpdir.name) / ".codex"
         session_dir = codex_home / "sessions" / "2026" / "05"
