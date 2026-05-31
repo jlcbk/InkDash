@@ -292,7 +292,14 @@ def request_vibe(
     req = request.Request(url, data=data, headers=headers, method=method)
     try:
         with request.urlopen(req, timeout=timeout) as response:
-            return json.loads(response.read().decode("utf-8"))
+            body = response.read()
+            try:
+                result = json.loads(body.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as e:
+                raise RuntimeError(f"服务返回的不是有效 JSON：{e}") from e
+            if not isinstance(result, dict):
+                raise RuntimeError("服务返回的 JSON 顶层必须是对象")
+            return result
     except error.HTTPError as e:
         body = e.read().decode("utf-8", errors="replace")
         raise RuntimeError(f"服务返回 {e.code}：{body}") from e
