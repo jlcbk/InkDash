@@ -318,11 +318,47 @@ def derive_health_url(url: str) -> str:
     return url + "/api/health"
 
 
+def display_text(value: Any) -> str:
+    return str(value).strip() if value is not None else ""
+
+
+def as_dict(value: Any) -> Dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def as_text_list(value: Any) -> list:
+    if isinstance(value, str):
+        text = display_text(value)
+        return [text] if text else []
+    if not isinstance(value, (list, tuple, set)):
+        return []
+    items = []
+    for item in value:
+        text = display_text(item)
+        if text:
+            items.append(text)
+    return items
+
+
+def latest_event_text(value: Any) -> str:
+    if isinstance(value, str):
+        return display_text(value) or "暂无"
+    if isinstance(value, dict):
+        return display_text(value.get("text")) or display_text(value.get("message")) or "暂无"
+    if isinstance(value, (list, tuple, set)) and value:
+        last = list(value)[-1]
+        if isinstance(last, dict):
+            text = display_text(last.get("text")) or display_text(last.get("message"))
+        else:
+            text = display_text(last)
+        return text or "暂无"
+    return "暂无"
+
+
 def format_summary(status: Dict[str, Any]) -> str:
-    blockers = status.get("blockers") or []
-    participants = status.get("participants") or []
-    events = status.get("events") or []
-    last_event = events[-1].get("text", "") if events and isinstance(events[-1], dict) else "暂无"
+    blockers = as_text_list(status.get("blockers"))
+    participants = as_text_list(status.get("participants"))
+    last_event = latest_event_text(status.get("events"))
 
     lines = [
         f"状态：{status.get('state', '未知')}",
@@ -339,8 +375,8 @@ def format_summary(status: Dict[str, Any]) -> str:
 
 
 def format_health_summary(health: Dict[str, Any]) -> str:
-    status_board = health.get("status_board") or health.get("vibe") or {}
-    codex = health.get("codex") or {}
+    status_board = as_dict(health.get("status_board") or health.get("vibe"))
+    codex = as_dict(health.get("codex"))
     codex_error = codex.get("error") or "无"
     stale = "可能过期" if status_board.get("stale") else "正常"
 
