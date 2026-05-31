@@ -1032,9 +1032,12 @@ last_fetch_time = 0
 fetch_count = 0
 
 
-def refresh_cache():
+def refresh_cache(sleep_before_first: bool = False):
     """Refresh the usage cache."""
     global usage_cache, last_fetch_time, fetch_count
+
+    if sleep_before_first:
+        time.sleep(refresh_interval_seconds())
     
     while True:
         try:
@@ -2698,16 +2701,20 @@ def main():
     # Get local IP
     local_ip = get_local_ip()
     
-    # Start background refresh thread
-    refresh_thread = threading.Thread(target=refresh_cache, daemon=True)
-    refresh_thread.start()
-    logger.info("Background refresh thread started")
-    
     # Initial fetch
     logger.info("Fetching initial Codex usage data...")
     global usage_cache
     usage_cache = fetch_codex_usage()
     logger.info(f"Initial fetch complete: 5h={usage_cache.five_hour_percent_left}%, weekly={usage_cache.weekly_percent_left}%")
+
+    # Start background refresh after the initial fetch to avoid duplicate startup RPCs.
+    refresh_thread = threading.Thread(
+        target=refresh_cache,
+        kwargs={"sleep_before_first": True},
+        daemon=True,
+    )
+    refresh_thread.start()
+    logger.info("Background refresh thread started")
     
     # Start HTTP server
     server = HTTPServer((server_host, server_port), RequestHandler)

@@ -749,6 +749,32 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(usage.source, "disabled")
         self.assertEqual(usage.error, "Codex 监控已关闭")
 
+    def test_refresh_cache_can_delay_first_fetch(self):
+        class StopRefresh(RuntimeError):
+            pass
+
+        sleep_calls = []
+        original_sleep = app.time.sleep
+        original_fetch = app.fetch_codex_usage
+        try:
+            def fake_sleep(seconds):
+                sleep_calls.append(seconds)
+                raise StopRefresh()
+
+            def fake_fetch():
+                self.fail("fetch_codex_usage should not run before the initial delay")
+
+            app.time.sleep = fake_sleep
+            app.fetch_codex_usage = fake_fetch
+
+            with self.assertRaises(StopRefresh):
+                app.refresh_cache(sleep_before_first=True)
+        finally:
+            app.time.sleep = original_sleep
+            app.fetch_codex_usage = original_fetch
+
+        self.assertEqual(sleep_calls, [app.refresh_interval_seconds()])
+
     def test_settings_page_uses_status_board_field_name(self):
         html = app.generate_settings_html()
         self.assertIn('name="show_status_board"', html)
