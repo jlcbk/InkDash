@@ -392,6 +392,32 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(updated["display"]["layout_mode"], "landscape")
         self.assertEqual(updated["display"]["text_scale_percent"], app.TEXT_SCALE_MAX)
 
+    def test_write_json_atomic_preserves_existing_file_on_failure(self):
+        target = Path(self.tmpdir.name) / "config.json"
+        target.write_text('{"ok": true}', encoding="utf-8")
+        tmp_path = target.with_name(f".{target.name}.tmp")
+
+        with self.assertRaises(TypeError):
+            app.write_json_atomic(target, {"bad": object()})
+
+        with open(target, "r", encoding="utf-8") as f:
+            self.assertEqual(json.load(f), {"ok": True})
+        self.assertFalse(tmp_path.exists())
+
+    def test_save_vibe_status_writes_atomic_json_file(self):
+        status_file = Path(self.tmpdir.name) / "inkdash_status.json"
+        original_status = app.STATUS_FILE
+        try:
+            app.STATUS_FILE = status_file
+            saved = app.save_vibe_status({"state": "已保存"})
+        finally:
+            app.STATUS_FILE = original_status
+
+        self.assertTrue(saved)
+        self.assertFalse(status_file.with_name(f".{status_file.name}.tmp").exists())
+        with open(status_file, "r", encoding="utf-8") as f:
+            self.assertEqual(json.load(f)["state"], "已保存")
+
     def test_load_config_default_result_does_not_share_nested_defaults(self):
         original_config_file = app.CONFIG_FILE
         try:
