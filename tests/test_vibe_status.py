@@ -8,6 +8,7 @@ import time
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -592,6 +593,77 @@ class VibeStatusTests(unittest.TestCase):
 
         self.assertEqual(usage["windows"]["24h"]["total_tokens"], 30)
         self.assertEqual(usage["windows"]["24h"]["session_count"], 2)
+
+    def test_compute_local_token_usage_skips_malformed_event_objects(self):
+        codex_home = Path(self.tmpdir.name) / ".codex"
+        session_dir = codex_home / "sessions"
+        session_dir.mkdir(parents=True)
+        now = datetime(2026, 5, 29, 10, 0, 0, tzinfo=timezone.utc)
+        session_file = session_dir / "mixed.jsonl"
+
+        valid_event = {
+            "timestamp": (now - timedelta(hours=1)).isoformat().replace("+00:00", "Z"),
+            "type": "event_msg",
+            "payload": {
+                "type": "token_count",
+                "info": {
+                    "last_token_usage": {
+                        "input_tokens": 20,
+                        "cached_input_tokens": 5,
+                        "output_tokens": 10,
+                        "reasoning_output_tokens": 0,
+                        "total_tokens": 30,
+                    },
+                },
+            },
+        }
+        with open(session_file, "w", encoding="utf-8") as f:
+            f.write(json.dumps(["not-an-event-object"]) + "\n")
+            f.write(json.dumps({"type": "event_msg", "payload": "bad-payload"}) + "\n")
+            f.write(json.dumps({"type": "event_msg", "payload": {"type": "token_count", "info": "bad-info"}}) + "\n")
+            f.write(json.dumps(valid_event) + "\n")
+
+        usage = app.compute_local_token_usage(codex_home=codex_home, now=now)
+
+        self.assertEqual(usage["windows"]["24h"]["total_tokens"], 30)
+        self.assertEqual(usage["windows"]["24h"]["event_count"], 1)
+
+    def test_fetch_codex_status_session_skips_malformed_events_in_same_file(self):
+        home = Path(self.tmpdir.name) / "home"
+        session_dir = home / ".codex" / "sessions"
+        session_dir.mkdir(parents=True)
+        session_file = session_dir / "mixed.jsonl"
+        reset_at = int(datetime(2026, 5, 29, 12, 0, 0).timestamp())
+        valid_event = {
+            "type": "event_msg",
+            "payload": {
+                "type": "token_count",
+                "rate_limits": {
+                    "primary": {
+                        "window_minutes": 300,
+                        "used_percent": 25,
+                        "resets_at": reset_at,
+                    },
+                    "secondary": {
+                        "window_minutes": 10080,
+                        "used_percent": 40,
+                        "resets_at": reset_at,
+                    },
+                    "plan_type": "pro",
+                },
+            },
+        }
+        with open(session_file, "w", encoding="utf-8") as f:
+            f.write(json.dumps({"type": "event_msg", "payload": "bad-payload"}) + "\n")
+            f.write(json.dumps({"type": "event_msg", "payload": {"type": "token_count", "rate_limits": "bad-limits"}}) + "\n")
+            f.write(json.dumps(valid_event) + "\n")
+
+        with patch.dict(os.environ, {"HOME": str(home)}):
+            usage = app.fetch_codex_status_session()
+
+        self.assertEqual(usage.five_hour_percent_left, 75)
+        self.assertEqual(usage.weekly_percent_left, 60)
+        self.assertEqual(usage.plan_type, "Pro")
 
     def test_recent_session_files_skips_broken_symlink(self):
         session_dir = Path(self.tmpdir.name) / "sessions"
