@@ -758,6 +758,19 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(app.percent_left_from_used(999), 0)
         self.assertIsNone(app.percent_left_from_used("bad-value"))
 
+    def test_dict_or_empty_rejects_non_object_values(self):
+        payload = {"ok": True}
+
+        self.assertIs(app.dict_or_empty(payload), payload)
+        self.assertEqual(app.dict_or_empty("bad-value"), {})
+        self.assertEqual(app.dict_or_empty(None), {})
+
+    def test_format_reset_timestamp_ignores_invalid_values(self):
+        reset_at = int(datetime(2026, 5, 29, 12, 0, 0).timestamp())
+
+        self.assertEqual(app.format_reset_timestamp(reset_at, "%H:%M"), "12:00")
+        self.assertEqual(app.format_reset_timestamp("bad-value", "%H:%M"), "")
+
     def test_main_html_has_grid_supports_fallback(self):
         html = app.generate_main_html(
             app.CodexUsage(),
