@@ -331,6 +331,11 @@ def decode_request_body(raw_body: bytes) -> str:
         raise ValueError("请求体不是有效 UTF-8") from e
 
 
+def parse_settings_form(post_data: str) -> Dict[str, list]:
+    """Parse settings form data without dropping intentionally blank fields."""
+    return parse_qs(post_data, keep_blank_values=True)
+
+
 def display_status_board_enabled(display: Dict[str, Any]) -> bool:
     """Return the status-board display flag, accepting the legacy key."""
     if "show_status_board" in display:
@@ -2619,7 +2624,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             try:
                 content_length = safe_content_length(self.headers.get("Content-Length"))
                 post_data = decode_request_body(self.rfile.read(content_length))
-                params = parse_qs(post_data)
+                params = parse_settings_form(post_data)
                 updated_config = settings_config_from_params(params, config)
                 
                 # Save config
