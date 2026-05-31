@@ -344,9 +344,9 @@ def settings_config_from_params(params: Dict[str, list], base_config: Dict[str, 
 
     # Update server settings
     if "port" in params:
-        updated["server"]["port"] = int(params["port"][0])
+        updated["server"]["port"] = server_port_number(params["port"][0])
     if "host" in params:
-        updated["server"]["host"] = params["host"][0]
+        updated["server"]["host"] = server_host_value(params["host"][0])
 
     # Update refresh settings
     if "refresh_interval" in params:

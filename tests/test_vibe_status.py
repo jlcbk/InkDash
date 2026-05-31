@@ -393,6 +393,19 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(updated["display"]["layout_mode"], "landscape")
         self.assertEqual(updated["display"]["text_scale_percent"], app.TEXT_SCALE_MAX)
 
+    def test_settings_config_from_params_normalizes_server_values(self):
+        base_config = app.merge_configs(app.DEFAULT_CONFIG, {
+            "server": {"port": 8080, "host": "127.0.0.1"},
+        })
+
+        updated = app.settings_config_from_params({
+            "port": ["999999"],
+            "host": ["  "],
+        }, base_config)
+
+        self.assertEqual(updated["server"]["port"], 65535)
+        self.assertEqual(updated["server"]["host"], "0.0.0.0")
+
     def test_write_json_atomic_preserves_existing_file_on_failure(self):
         target = Path(self.tmpdir.name) / "config.json"
         target.write_text('{"ok": true}', encoding="utf-8")
