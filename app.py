@@ -99,6 +99,7 @@ PREFERENCE_COOKIE_MAX_AGE = 365 * 24 * 60 * 60
 LAYOUT_COOKIE = "inkdash_layout"
 TEXT_SCALE_COOKIE = "inkdash_text_scale"
 MAX_POST_BODY_BYTES = 1024 * 1024
+TOKEN_QUERY_PATTERN = re.compile(r"(?i)(^|[?&])(token=)[^&#\s]*")
 
 DEFAULT_CONFIG = {
     "server": {
@@ -418,10 +419,16 @@ def tokens_match(expected: str, supplied: str) -> bool:
 
 def redact_sensitive_url(value: str) -> str:
     """Redact sensitive query parameters before logging request targets."""
+    def fallback_redact(raw_value: str) -> str:
+        return TOKEN_QUERY_PATTERN.sub(
+            lambda match: f"{match.group(1)}{match.group(2)}REDACTED",
+            str(raw_value),
+        )
+
     try:
         parsed = urlparse(str(value))
     except ValueError:
-        return str(value)
+        return fallback_redact(str(value))
     if not parsed.query:
         return str(value)
 
@@ -430,7 +437,7 @@ def redact_sensitive_url(value: str) -> str:
     try:
         parsed_items = parse_qsl(parsed.query, keep_blank_values=True)
     except ValueError:
-        return str(value)
+        return fallback_redact(str(value))
 
     for key, item_value in parsed_items:
         if key.lower() == "token":
