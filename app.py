@@ -497,6 +497,19 @@ def percent_left_from_used(value: Any) -> Optional[int]:
     return max(0, min(100, 100 - used_percent))
 
 
+def dict_or_empty(value: Any) -> Dict[str, Any]:
+    """Return value when it is a dictionary, otherwise an empty dictionary."""
+    return value if isinstance(value, dict) else {}
+
+
+def format_reset_timestamp(value: Any, fmt: str) -> str:
+    """Format a reset timestamp, ignoring malformed values."""
+    try:
+        return datetime.fromtimestamp(value).strftime(fmt)
+    except (TypeError, ValueError, OSError, OverflowError):
+        return ""
+
+
 def vibe_stale_after_seconds() -> int:
     """Compatibility wrapper for the old status freshness helper name."""
     return status_stale_after_seconds()
@@ -933,35 +946,29 @@ def fetch_codex_status_cli() -> CodexUsage:
         usage.source = "cli-rpc"
         usage.last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        result = limits_response.get("result", {})
-        rate_limits = result.get("rateLimits", {})
+        result = dict_or_empty(limits_response.get("result", {}))
+        rate_limits = dict_or_empty(result.get("rateLimits", {}))
         
         # Parse primary (5h limit)
-        primary = rate_limits.get("primary", {})
+        primary = dict_or_empty(rate_limits.get("primary", {}))
         if primary:
             percent_left = percent_left_from_used(primary.get("usedPercent", 0))
             if percent_left is not None:
                 usage.five_hour_percent_left = percent_left
             
-            resets_at = primary.get("resetsAt")
-            if resets_at:
-                reset_dt = datetime.fromtimestamp(resets_at)
-                usage.five_hour_reset = reset_dt.strftime("%H:%M")
+            usage.five_hour_reset = format_reset_timestamp(primary.get("resetsAt"), "%H:%M")
         
         # Parse secondary (weekly limit)
-        secondary = rate_limits.get("secondary", {})
+        secondary = dict_or_empty(rate_limits.get("secondary", {}))
         if secondary:
             percent_left = percent_left_from_used(secondary.get("usedPercent", 0))
             if percent_left is not None:
                 usage.weekly_percent_left = percent_left
             
-            resets_at = secondary.get("resetsAt")
-            if resets_at:
-                reset_dt = datetime.fromtimestamp(resets_at)
-                usage.weekly_reset = reset_dt.strftime("%m-%d %H:%M")
+            usage.weekly_reset = format_reset_timestamp(secondary.get("resetsAt"), "%m-%d %H:%M")
         
         # Parse credits
-        credits = rate_limits.get("credits", {})
+        credits = dict_or_empty(rate_limits.get("credits", {}))
         if credits:
             balance = credits.get("balance")
             if balance:
@@ -1046,19 +1053,9 @@ def fetch_codex_status_session() -> CodexUsage:
                     if secondary_left is not None:
                         usage.weekly_percent_left = secondary_left
 
-                    if primary.get("resets_at"):
-                        try:
-                            reset_dt = datetime.fromtimestamp(primary["resets_at"])
-                            usage.five_hour_reset = reset_dt.strftime("%H:%M")
-                        except (TypeError, ValueError, OSError, OverflowError):
-                            pass
+                    usage.five_hour_reset = format_reset_timestamp(primary.get("resets_at"), "%H:%M")
 
-                    if secondary.get("resets_at"):
-                        try:
-                            reset_dt = datetime.fromtimestamp(secondary["resets_at"])
-                            usage.weekly_reset = reset_dt.strftime("%m-%d %H:%M")
-                        except (TypeError, ValueError, OSError, OverflowError):
-                            pass
+                    usage.weekly_reset = format_reset_timestamp(secondary.get("resets_at"), "%m-%d %H:%M")
 
                     plan_type = rate_limits.get("plan_type", "")
                     if plan_type:
