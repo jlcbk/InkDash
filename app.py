@@ -6,6 +6,7 @@ InkDash: Dashboard for Codex usage and collaboration status on e-ink devices.
 import argparse
 import copy
 import hmac
+import math
 import os
 import re
 import shutil
@@ -227,7 +228,7 @@ def normalize_text_scale(value: Any) -> int:
     """Return a supported dashboard text scale percentage."""
     try:
         scale = int(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         scale = TEXT_SCALE_DEFAULT
     return max(TEXT_SCALE_MIN, min(TEXT_SCALE_MAX, scale))
 
@@ -236,7 +237,7 @@ def clamp_int_range(value: Any, default: int, minimum: int, maximum: int) -> int
     """Return an integer clamped to a safe inclusive range."""
     try:
         number = int(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         number = default
     return max(minimum, min(maximum, number))
 
@@ -254,7 +255,7 @@ def page_refresh_seconds(value: Any = None) -> int:
         value = config.get("refresh", {}).get("auto_refresh_page_ms", 300000)
     try:
         seconds = int(value) // 1000
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         seconds = 300
     return clamp_int_range(seconds, 300, 30, 3600)
 
@@ -295,6 +296,8 @@ def config_bool(value: Any, default: bool = False) -> bool:
             return False
         return default
     if isinstance(value, (int, float)):
+        if not math.isfinite(value):
+            return default
         return bool(value)
     return default
 
@@ -481,7 +484,7 @@ def status_stale_after_seconds() -> int:
         value = config.get("vibe", {}).get("stale_after_seconds", 900)
     try:
         return max(60, int(value))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return 900
 
 
@@ -491,7 +494,7 @@ def codex_session_file_limit(value: Any = None) -> int:
         value = config.get("codex", {}).get("session_file_limit", 10)
     try:
         limit = int(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         limit = 10
     return max(1, min(100, limit))
 

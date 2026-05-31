@@ -210,14 +210,20 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(app.normalize_text_scale("10"), app.TEXT_SCALE_MIN)
         self.assertEqual(app.normalize_text_scale("999"), app.TEXT_SCALE_MAX)
         self.assertEqual(app.normalize_text_scale("bad-value"), app.TEXT_SCALE_DEFAULT)
+        self.assertEqual(app.normalize_text_scale(float("inf")), app.TEXT_SCALE_DEFAULT)
+        self.assertEqual(app.normalize_text_scale(float("nan")), app.TEXT_SCALE_DEFAULT)
 
     def test_refresh_helpers_clamp_invalid_config_values(self):
         self.assertEqual(app.refresh_interval_seconds("bad-value"), 300)
         self.assertEqual(app.refresh_interval_seconds(5), 30)
         self.assertEqual(app.refresh_interval_seconds(99999), 3600)
+        self.assertEqual(app.refresh_interval_seconds(float("inf")), 300)
+        self.assertEqual(app.refresh_interval_seconds(float("nan")), 300)
         self.assertEqual(app.page_refresh_seconds("bad-value"), 300)
         self.assertEqual(app.page_refresh_seconds(5000), 30)
         self.assertEqual(app.page_refresh_seconds(99999999), 3600)
+        self.assertEqual(app.page_refresh_seconds(float("inf")), 300)
+        self.assertEqual(app.page_refresh_seconds(float("nan")), 300)
 
     def test_server_helpers_clamp_invalid_config_values(self):
         self.assertEqual(app.server_port_number("bad-value"), 8080)
@@ -260,6 +266,16 @@ class VibeStatusTests(unittest.TestCase):
 
         self.assertIn('name="stale_after_seconds"', html)
         self.assertIn("状态过期阈值", html)
+
+    def test_status_stale_after_seconds_rejects_non_finite_values(self):
+        original_config = app.config
+        try:
+            app.config = {"status": {"stale_after_seconds": float("inf")}}
+            self.assertEqual(app.status_stale_after_seconds(), 900)
+            app.config = {"status": {"stale_after_seconds": float("nan")}}
+            self.assertEqual(app.status_stale_after_seconds(), 900)
+        finally:
+            app.config = original_config
 
     def test_settings_html_exposes_layout_mode(self):
         html = app.generate_settings_html()
@@ -819,6 +835,8 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(app.codex_session_file_limit("bad-value"), 10)
         self.assertEqual(app.codex_session_file_limit(0), 1)
         self.assertEqual(app.codex_session_file_limit(999), 100)
+        self.assertEqual(app.codex_session_file_limit(float("inf")), 10)
+        self.assertEqual(app.codex_session_file_limit(float("nan")), 10)
 
     def test_percent_left_from_used_clamps_and_rejects_invalid_values(self):
         self.assertEqual(app.percent_left_from_used(25), 75)
@@ -986,6 +1004,8 @@ class VibeStatusTests(unittest.TestCase):
         self.assertFalse(app.display_flag(display, "show_credits"))
         self.assertFalse(app.display_flag(display, "show_data_source"))
         self.assertFalse(app.display_flag(display, "show_last_updated"))
+        self.assertFalse(app.config_bool(float("inf"), False))
+        self.assertFalse(app.config_bool(float("nan"), False))
 
     def test_codex_enabled_flag_parses_string_booleans(self):
         self.assertFalse(app.codex_enabled_flag("false"))
