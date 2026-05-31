@@ -408,7 +408,12 @@ def public_config() -> Dict[str, Any]:
 
 def tokens_match(expected: str, supplied: str) -> bool:
     """Compare API tokens without accepting empty configured tokens."""
-    return bool(expected) and hmac.compare_digest(str(expected), str(supplied))
+    if not expected:
+        return False
+    return hmac.compare_digest(
+        str(expected).encode("utf-8"),
+        str(supplied).encode("utf-8"),
+    )
 
 
 def redact_sensitive_url(value: str) -> str:

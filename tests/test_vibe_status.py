@@ -466,6 +466,10 @@ class VibeStatusTests(unittest.TestCase):
         self.assertFalse(app.tokens_match("", "secret"))
         self.assertFalse(app.tokens_match("secret", None))
 
+    def test_token_comparison_supports_non_ascii_tokens(self):
+        self.assertTrue(app.tokens_match("密钥-123", "密钥-123"))
+        self.assertFalse(app.tokens_match("密钥-123", "密钥-456"))
+
     def test_request_line_redacts_query_token_before_logging(self):
         request_line = "POST /api/status?token=secret&event=ok&token=second HTTP/1.1"
 
