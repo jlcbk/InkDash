@@ -853,6 +853,13 @@ class VibeStatusTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             app.decode_request_body(b"\xff\xfe")
 
+    def test_find_codex_binary_uses_python_path_lookup(self):
+        with patch("app.shutil.which", return_value="/usr/local/bin/codex"):
+            self.assertEqual(app.find_codex_binary(), "/usr/local/bin/codex")
+
+        with patch("app.shutil.which", return_value=None):
+            self.assertIsNone(app.find_codex_binary())
+
     def test_terminate_process_waits_after_terminate(self):
         class FakeProcess:
             def __init__(self):

@@ -8,6 +8,7 @@ import copy
 import hmac
 import os
 import re
+import shutil
 import subprocess
 import json
 import logging
@@ -777,18 +778,10 @@ def attach_local_token_usage(usage: CodexUsage) -> CodexUsage:
 
 def find_codex_binary() -> Optional[str]:
     """Find the codex binary in PATH."""
-    try:
-        result = subprocess.run(
-            ["which", "codex"],
-            capture_output=True,
-            text=True
-        )
-        if result.returncode == 0:
-            path = result.stdout.strip()
-            logger.debug(f"Found codex binary at: {path}")
-            return path
-    except Exception as e:
-        logger.warning(f"Error finding codex binary: {e}")
+    path = shutil.which("codex")
+    if path:
+        logger.debug(f"Found codex binary at: {path}")
+        return path
     return None
 
 
