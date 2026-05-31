@@ -376,24 +376,44 @@ def settings_config_from_params(params: Dict[str, list], base_config: Dict[str, 
 
     # Update refresh settings
     if "refresh_interval" in params:
-        interval = int(params["refresh_interval"][0])
-        updated["refresh"]["interval_seconds"] = max(30, min(3600, interval))
+        current_interval = refresh_interval_seconds(updated["refresh"].get("interval_seconds"))
+        updated["refresh"]["interval_seconds"] = clamp_int_range(
+            params["refresh_interval"][0],
+            current_interval,
+            30,
+            3600,
+        )
     if "refresh_page" in params:
-        page_refresh = int(params["refresh_page"][0])
-        updated["refresh"]["auto_refresh_page_ms"] = max(30, min(3600, page_refresh)) * 1000
+        current_page_refresh = page_refresh_seconds(updated["refresh"].get("auto_refresh_page_ms"))
+        updated["refresh"]["auto_refresh_page_ms"] = clamp_int_range(
+            params["refresh_page"][0],
+            current_page_refresh,
+            30,
+            3600,
+        ) * 1000
 
     # Update Codex settings
     updated["codex"]["enabled"] = "codex_enabled" in params
     if "codex_source" in params:
         updated["codex"]["source"] = params["codex_source"][0]
     if "session_limit" in params:
-        limit = int(params["session_limit"][0])
-        updated["codex"]["session_file_limit"] = max(1, min(100, limit))
+        current_limit = codex_session_file_limit(updated["codex"].get("session_file_limit"))
+        updated["codex"]["session_file_limit"] = clamp_int_range(
+            params["session_limit"][0],
+            current_limit,
+            1,
+            100,
+        )
 
     # Update status board settings
     if "stale_after_seconds" in params:
-        stale_after = int(params["stale_after_seconds"][0])
-        updated["status"]["stale_after_seconds"] = max(60, min(86400, stale_after))
+        current_stale_after = status_stale_after_seconds(updated["status"].get("stale_after_seconds"))
+        updated["status"]["stale_after_seconds"] = clamp_int_range(
+            params["stale_after_seconds"][0],
+            current_stale_after,
+            60,
+            86400,
+        )
         updated.pop("vibe", None)
 
     # Update display settings
@@ -494,15 +514,13 @@ def redact_sensitive_request_line(request_line: str) -> str:
     return " ".join(parts)
 
 
-def status_stale_after_seconds() -> int:
+def status_stale_after_seconds(value: Any = None) -> int:
     """Return the heartbeat freshness threshold."""
-    value = config_section("status").get("stale_after_seconds")
     if value is None:
-        value = config_section("vibe").get("stale_after_seconds", 900)
-    try:
-        return max(60, int(value))
-    except (TypeError, ValueError, OverflowError):
-        return 900
+        value = config_section("status").get("stale_after_seconds")
+        if value is None:
+            value = config_section("vibe").get("stale_after_seconds", 900)
+    return clamp_int_range(value, 900, 60, 86400)
 
 
 def codex_session_file_limit(value: Any = None) -> int:

@@ -391,20 +391,29 @@ class VibeStatusTests(unittest.TestCase):
         self.assertIn("InkDash", main_html)
         self.assertIn("设置", settings_html)
 
-    def test_settings_config_from_params_does_not_mutate_base_on_error(self):
+    def test_settings_config_from_params_preserves_base_on_bad_numeric_fields(self):
         base_config = app.merge_configs(app.DEFAULT_CONFIG, {
             "server": {"port": 8080},
-            "refresh": {"interval_seconds": 300},
+            "refresh": {"interval_seconds": 600, "auto_refresh_page_ms": 120000},
+            "codex": {"session_file_limit": 7},
+            "status": {"stale_after_seconds": 1200},
         })
         original = copy.deepcopy(base_config)
 
-        with self.assertRaises(ValueError):
-            app.settings_config_from_params({
-                "port": ["9090"],
-                "refresh_interval": ["bad-value"],
-            }, base_config)
+        updated = app.settings_config_from_params({
+            "port": ["9090"],
+            "refresh_interval": ["bad-value"],
+            "refresh_page": [""],
+            "session_limit": ["bad-value"],
+            "stale_after_seconds": ["bad-value"],
+        }, base_config)
 
         self.assertEqual(base_config, original)
+        self.assertEqual(updated["server"]["port"], 9090)
+        self.assertEqual(updated["refresh"]["interval_seconds"], 600)
+        self.assertEqual(updated["refresh"]["auto_refresh_page_ms"], 120000)
+        self.assertEqual(updated["codex"]["session_file_limit"], 7)
+        self.assertEqual(updated["status"]["stale_after_seconds"], 1200)
 
     def test_settings_config_from_params_returns_validated_copy(self):
         base_config = app.merge_configs(app.DEFAULT_CONFIG, {
