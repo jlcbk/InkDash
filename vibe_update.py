@@ -311,7 +311,10 @@ def request_vibe(
 
 
 def derive_health_url(url: str) -> str:
-    parsed = urlparse(url.rstrip("/"))
+    try:
+        parsed = urlparse(url.rstrip("/"))
+    except ValueError as e:
+        raise RuntimeError(f"无效的 InkDash URL：{e}") from e
     path = parsed.path.rstrip("/")
     for suffix in ("/api/vibe", "/api/status", "/api/health"):
         if path.endswith(suffix):
@@ -405,13 +408,14 @@ def wait_for_health(
     sleep_fn=time.sleep,
     monotonic_fn=time.monotonic,
 ) -> Dict[str, Any]:
+    health_url = derive_health_url(url)
     deadline = monotonic_fn() + max(0.0, wait_timeout)
     interval = max(0.1, wait_interval)
     last_error = ""
 
     while True:
         try:
-            return request_vibe(derive_health_url(url), None, request_timeout, token)
+            return request_vibe(health_url, None, request_timeout, token)
         except RuntimeError as e:
             last_error = str(e)
 

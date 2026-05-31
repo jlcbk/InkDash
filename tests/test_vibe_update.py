@@ -228,6 +228,10 @@ class VibeUpdateTests(unittest.TestCase):
             "http://localhost:8080/api/health",
         )
 
+    def test_derive_health_url_reports_invalid_url_without_traceback(self):
+        with self.assertRaisesRegex(RuntimeError, "无效的 InkDash URL"):
+            vibe_update.derive_health_url("http://[::1")
+
     def test_format_health_summary(self):
         summary = vibe_update.format_health_summary({
             "status": "ok",
@@ -294,6 +298,19 @@ class VibeUpdateTests(unittest.TestCase):
                     sleep_fn=lambda _: None,
                     monotonic_fn=iter([0.0, 0.0]).__next__,
                 )
+
+    def test_wait_for_health_rejects_invalid_url_before_retry(self):
+        with patch("vibe_update.request_vibe") as request_mock:
+            with self.assertRaisesRegex(RuntimeError, "无效的 InkDash URL"):
+                vibe_update.wait_for_health(
+                    "http://[::1",
+                    request_timeout=0.1,
+                    wait_timeout=2.0,
+                    wait_interval=0.1,
+                    sleep_fn=lambda _: self.fail("invalid URL should not sleep"),
+                )
+
+        request_mock.assert_not_called()
 
     def test_request_vibe_reports_invalid_json_without_traceback(self):
         with patch("vibe_update.request.urlopen", return_value=FakeResponse(b"<html>not json</html>")):
