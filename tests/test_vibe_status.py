@@ -734,6 +734,66 @@ class VibeStatusTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             app.decode_request_body(b"\xff\xfe")
 
+    def test_terminate_process_waits_after_terminate(self):
+        class FakeProcess:
+            def __init__(self):
+                self.terminated = False
+                self.killed = False
+                self.wait_calls = 0
+
+            def poll(self):
+                return None
+
+            def terminate(self):
+                self.terminated = True
+
+            def kill(self):
+                self.killed = True
+
+            def wait(self, timeout):
+                self.wait_calls += 1
+                return 0
+
+        process = FakeProcess()
+
+        app.terminate_process(process, timeout=0.01)
+
+        self.assertTrue(process.terminated)
+        self.assertFalse(process.killed)
+        self.assertEqual(process.wait_calls, 1)
+
+    def test_terminate_process_kills_after_timeout(self):
+        class FakeProcess:
+            def __init__(self):
+                self.terminated = False
+                self.killed = False
+                self.wait_calls = 0
+                self.timeout_once = True
+
+            def poll(self):
+                return None
+
+            def terminate(self):
+                self.terminated = True
+
+            def kill(self):
+                self.killed = True
+
+            def wait(self, timeout):
+                self.wait_calls += 1
+                if self.timeout_once:
+                    self.timeout_once = False
+                    raise app.subprocess.TimeoutExpired("codex", timeout)
+                return 0
+
+        process = FakeProcess()
+
+        app.terminate_process(process, timeout=0.01)
+
+        self.assertTrue(process.terminated)
+        self.assertTrue(process.killed)
+        self.assertEqual(process.wait_calls, 2)
+
     def test_fetch_codex_usage_honors_string_false_enabled_flag(self):
         original_config = app.config
         original_attach = app.attach_local_token_usage

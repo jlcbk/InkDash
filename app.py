@@ -761,6 +761,22 @@ def find_codex_binary() -> Optional[str]:
     return None
 
 
+def terminate_process(process: subprocess.Popen, timeout: float = 2.0):
+    """Terminate and reap a child process, killing it if it refuses to exit."""
+    try:
+        if process.poll() is None:
+            process.terminate()
+        process.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        try:
+            process.kill()
+            process.wait(timeout=timeout)
+        except Exception as e:
+            logger.warning(f"Failed to kill process: {e}")
+    except Exception as e:
+        logger.warning(f"Failed to terminate process: {e}")
+
+
 def fetch_codex_status_cli() -> CodexUsage:
     """Fetch Codex usage via JSON-RPC through codex app-server."""
     usage = CodexUsage()
@@ -855,7 +871,8 @@ def fetch_codex_status_cli() -> CodexUsage:
             error_msg = init_response.get("error", {}).get("message", "Unknown error") if init_response else "No response"
             usage.error = f"初始化 Codex RPC 失败：{error_msg}"
             logger.error(usage.error)
-            process.terminate()
+            terminate_process(process)
+            process = None
             return usage
         
         # Send initialized notification
@@ -865,7 +882,7 @@ def fetch_codex_status_cli() -> CodexUsage:
         limits_response = send_request("account/rateLimits/read", timeout=5.0)
         
         # Clean up
-        process.terminate()
+        terminate_process(process)
         process = None
         
         if not limits_response or "error" in limits_response:
@@ -922,10 +939,7 @@ def fetch_codex_status_cli() -> CodexUsage:
         
     except Exception as e:
         if process:
-            try:
-                process.terminate()
-            except:
-                pass
+            terminate_process(process)
         usage.error = f"Codex RPC 出错：{str(e)}"
         logger.exception("Exception in fetch_codex_status_cli")
         return usage
