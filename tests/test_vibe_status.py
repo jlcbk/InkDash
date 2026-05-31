@@ -480,6 +480,13 @@ class VibeStatusTests(unittest.TestCase):
         self.assertIn("token=REDACTED", redacted)
         self.assertIn("event=ok", redacted)
 
+    def test_request_line_redaction_tolerates_malformed_urls(self):
+        request_line = "GET http://[::1?token=secret HTTP/1.1"
+
+        redacted = app.redact_sensitive_request_line(request_line)
+
+        self.assertEqual(redacted, request_line)
+
     def test_public_config_redacts_configured_api_token(self):
         original_config = app.config
         try:
