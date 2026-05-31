@@ -70,6 +70,24 @@ class VibeUpdateTests(unittest.TestCase):
         self.assertIn("阻塞项：无", summary)
         self.assertIn("最近事件：测试通过。", summary)
 
+    def test_format_summary_tolerates_malformed_collection_fields(self):
+        summary = vibe_update.format_summary({
+            "state": "等待评审",
+            "project": "InkDash",
+            "branch": "main",
+            "objective": "显示状态",
+            "current_task": "检查 PR",
+            "next_action": "合并",
+            "participants": "单个参与者",
+            "blockers": {"reason": "卡住"},
+            "events": "刚刚通过。",
+            "updated_at": "2026-05-29 01:30:00",
+        })
+
+        self.assertIn("参与者：单个参与者", summary)
+        self.assertIn("阻塞项：无", summary)
+        self.assertIn("最近事件：刚刚通过。", summary)
+
     def test_from_git_fills_project_and_branch_without_overriding_explicit_values(self):
         def fake_run(cmd, cwd, capture_output, text, timeout):
             self.assertEqual(cwd, "/tmp/work")
@@ -218,6 +236,18 @@ class VibeUpdateTests(unittest.TestCase):
         self.assertIn("服务：ok", summary)
         self.assertIn("状态心跳：正常", summary)
         self.assertIn("Codex 数据来源：session", summary)
+
+    def test_format_health_summary_tolerates_malformed_nested_objects(self):
+        summary = vibe_update.format_health_summary({
+            "status": "ok",
+            "checked_at": "2026-05-29 02:20:00",
+            "status_board": "running",
+            "codex": "broken",
+        })
+
+        self.assertIn("服务：ok", summary)
+        self.assertIn("状态看板：未知", summary)
+        self.assertIn("Codex 数据来源：未知", summary)
 
     def test_wait_for_health_returns_after_retry(self):
         calls = [
