@@ -336,6 +336,14 @@ def parse_settings_form(post_data: str) -> Dict[str, list]:
     return parse_qs(post_data, keep_blank_values=True)
 
 
+def parse_request_target(value: str):
+    """Parse an HTTP request target, returning None for malformed absolute URLs."""
+    try:
+        return urlparse(value)
+    except ValueError:
+        return None
+
+
 def display_status_board_enabled(display: Dict[str, Any]) -> bool:
     """Return the status-board display flag, accepting the legacy key."""
     if "show_status_board" in display:
@@ -2469,6 +2477,13 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps(payload, indent=2, ensure_ascii=False).encode("utf-8"))
 
+    def send_bad_request(self, message: str = "请求路径格式错误"):
+        self.send_response(400)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_no_cache_headers()
+        self.end_headers()
+        self.wfile.write(message.encode("utf-8"))
+
     def is_api_write_authorized(self, parsed_path) -> bool:
         expected = configured_api_token()
         if not expected:
@@ -2522,7 +2537,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         )
     
     def do_GET(self):
-        parsed_path = urlparse(self.path)
+        parsed_path = parse_request_target(self.path)
+        if parsed_path is None:
+            self.send_bad_request()
+            return
         path = parsed_path.path
         
         if path == "/" or path == "/index.html":
@@ -2638,7 +2656,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"<h1>404 Not Found</h1>")
     
     def do_POST(self):
-        parsed_path = urlparse(self.path)
+        parsed_path = parse_request_target(self.path)
+        if parsed_path is None:
+            self.send_bad_request()
+            return
         path = parsed_path.path
 
         if path == "/settings":
