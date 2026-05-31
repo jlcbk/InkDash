@@ -218,6 +218,16 @@ class VibeUpdateTests(unittest.TestCase):
             "http://localhost:8080/api/health",
         )
 
+    def test_derive_health_url_drops_status_query_parameters(self):
+        self.assertEqual(
+            vibe_update.derive_health_url("http://localhost:8080/api/status?token=secret"),
+            "http://localhost:8080/api/health",
+        )
+        self.assertEqual(
+            vibe_update.derive_health_url("http://localhost:8080/?token=secret"),
+            "http://localhost:8080/api/health",
+        )
+
     def test_format_health_summary(self):
         summary = vibe_update.format_health_summary({
             "status": "ok",

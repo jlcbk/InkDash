@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 from urllib import error, request
+from urllib.parse import urlparse, urlunparse
 
 
 DEFAULT_URL = "http://localhost:8080/api/status"
@@ -308,14 +309,15 @@ def request_vibe(
 
 
 def derive_health_url(url: str) -> str:
-    url = url.rstrip("/")
-    if url.endswith("/api/vibe"):
-        return url[:-len("/api/vibe")] + "/api/health"
-    if url.endswith("/api/status"):
-        return url[:-len("/api/status")] + "/api/health"
-    if url.endswith("/api/health"):
-        return url
-    return url + "/api/health"
+    parsed = urlparse(url.rstrip("/"))
+    path = parsed.path.rstrip("/")
+    for suffix in ("/api/vibe", "/api/status", "/api/health"):
+        if path.endswith(suffix):
+            health_path = path[:-len(suffix)] + "/api/health"
+            return urlunparse(parsed._replace(path=health_path, query="", fragment=""))
+
+    health_path = f"{path}/api/health" if path else "/api/health"
+    return urlunparse(parsed._replace(path=health_path, query="", fragment=""))
 
 
 def display_text(value: Any) -> str:
