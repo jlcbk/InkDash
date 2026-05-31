@@ -418,13 +418,21 @@ def tokens_match(expected: str, supplied: str) -> bool:
 
 def redact_sensitive_url(value: str) -> str:
     """Redact sensitive query parameters before logging request targets."""
-    parsed = urlparse(str(value))
+    try:
+        parsed = urlparse(str(value))
+    except ValueError:
+        return str(value)
     if not parsed.query:
         return str(value)
 
     query_items = []
     changed = False
-    for key, item_value in parse_qsl(parsed.query, keep_blank_values=True):
+    try:
+        parsed_items = parse_qsl(parsed.query, keep_blank_values=True)
+    except ValueError:
+        return str(value)
+
+    for key, item_value in parsed_items:
         if key.lower() == "token":
             query_items.append((key, "REDACTED"))
             changed = True
