@@ -418,6 +418,13 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(updated["server"]["port"], 65535)
         self.assertEqual(updated["server"]["host"], "0.0.0.0")
 
+    def test_parse_request_target_rejects_malformed_absolute_url(self):
+        parsed = app.parse_request_target("/api/status?token=secret")
+        self.assertIsNotNone(parsed)
+        self.assertEqual(parsed.path, "/api/status")
+
+        self.assertIsNone(app.parse_request_target("http://[::1"))
+
     def test_write_json_atomic_preserves_existing_file_on_failure(self):
         target = Path(self.tmpdir.name) / "config.json"
         target.write_text('{"ok": true}', encoding="utf-8")
