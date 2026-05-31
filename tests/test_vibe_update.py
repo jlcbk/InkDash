@@ -313,6 +313,14 @@ class VibeUpdateTests(unittest.TestCase):
                     timeout=0.1,
                 )
 
+    def test_request_vibe_reports_invalid_url_without_traceback(self):
+        with self.assertRaisesRegex(RuntimeError, "无法连接 InkDash"):
+            vibe_update.request_vibe(
+                "not a url",
+                None,
+                timeout=0.1,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

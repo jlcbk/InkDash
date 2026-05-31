@@ -290,8 +290,8 @@ def request_vibe(
     if token:
         headers["X-InkDash-Token"] = token
 
-    req = request.Request(url, data=data, headers=headers, method=method)
     try:
+        req = request.Request(url, data=data, headers=headers, method=method)
         with request.urlopen(req, timeout=timeout) as response:
             body = response.read()
             try:
@@ -305,6 +305,8 @@ def request_vibe(
         body = e.read().decode("utf-8", errors="replace")
         raise RuntimeError(f"服务返回 {e.code}：{body}") from e
     except error.URLError as e:
+        raise RuntimeError(f"无法连接 InkDash：{e}") from e
+    except ValueError as e:
         raise RuntimeError(f"无法连接 InkDash：{e}") from e
 
 
