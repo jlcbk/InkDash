@@ -596,6 +596,25 @@ class VibeStatusTests(unittest.TestCase):
 
         self.assertEqual(status.get("state"), "from-legacy")
 
+    def test_load_vibe_status_falls_back_to_legacy_when_new_file_is_invalid(self):
+        legacy = Path(self.tmpdir.name) / "vibe_status.json"
+        new_file = Path(self.tmpdir.name) / "inkdash_status.json"
+        new_file.write_text("{invalid-json}", encoding="utf-8")
+        legacy.write_text(json.dumps({"state": "legacy-valid"}), encoding="utf-8")
+
+        original_status = app.STATUS_FILE
+        original_legacy = app.STATUS_FILE_LEGACY
+        try:
+            app.STATUS_FILE = new_file
+            app.STATUS_FILE_LEGACY = legacy
+
+            status = app.load_vibe_status()
+        finally:
+            app.STATUS_FILE = original_status
+            app.STATUS_FILE_LEGACY = original_legacy
+
+        self.assertEqual(status.get("state"), "legacy-valid")
+
     def test_settings_page_max_width_matches_main_page(self):
         html = app.generate_settings_html()
         self.assertIn("max-width: 1040px", html)

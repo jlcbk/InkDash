@@ -401,13 +401,18 @@ def is_vibe_status_stale(status: Dict[str, Any], now: Optional[datetime] = None)
 
 def _load_vibe_status_unlocked() -> Dict[str, Any]:
     """Load persisted status while the caller owns status_lock."""
-    status_file = STATUS_FILE if STATUS_FILE.exists() else STATUS_FILE_LEGACY
-    try:
-        if status_file.exists():
+    status_files = [STATUS_FILE]
+    if STATUS_FILE_LEGACY != STATUS_FILE:
+        status_files.append(STATUS_FILE_LEGACY)
+
+    for status_file in status_files:
+        if not status_file.exists():
+            continue
+        try:
             with open(status_file, "r", encoding="utf-8") as f:
                 return normalize_vibe_status(json.load(f))
-    except Exception as e:
-        logger.warning(f"Failed to load vibe status: {e}")
+        except Exception as e:
+            logger.warning(f"Failed to load vibe status from {status_file}: {e}")
     return default_vibe_status()
 
 
