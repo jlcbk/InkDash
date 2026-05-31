@@ -818,12 +818,16 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(app.percent_left_from_used(-10), 100)
         self.assertEqual(app.percent_left_from_used(999), 0)
         self.assertIsNone(app.percent_left_from_used("bad-value"))
+        self.assertIsNone(app.percent_left_from_used(float("inf")))
+        self.assertIsNone(app.percent_left_from_used(float("nan")))
 
     def test_token_count_value_clamps_negative_and_rejects_non_numeric_values(self):
         self.assertEqual(app.token_count_value(42), 42)
         self.assertEqual(app.token_count_value(3.8), 3)
         self.assertEqual(app.token_count_value(-5), 0)
         self.assertEqual(app.token_count_value("5"), 0)
+        self.assertEqual(app.token_count_value(float("inf")), 0)
+        self.assertEqual(app.token_count_value(float("nan")), 0)
 
     def test_dict_or_empty_rejects_non_object_values(self):
         payload = {"ok": True}

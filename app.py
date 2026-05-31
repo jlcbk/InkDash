@@ -492,7 +492,7 @@ def percent_left_from_used(value: Any) -> Optional[int]:
     """Convert a used percentage into a clamped remaining percentage."""
     try:
         used_percent = int(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return None
     return max(0, min(100, 100 - used_percent))
 
@@ -676,7 +676,11 @@ def token_count_value(value: Any) -> int:
     """Return a non-negative token count from a session usage value."""
     if not isinstance(value, (int, float)):
         return 0
-    return max(0, int(value))
+    try:
+        count = int(value)
+    except (ValueError, OverflowError):
+        return 0
+    return max(0, count)
 
 
 def parse_codex_timestamp(value: Any) -> Optional[datetime]:
