@@ -162,6 +162,13 @@ def save_config(config: Dict[str, Any]) -> bool:
         return False
 
 
+def clean_config(config_value: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a config copy with default sections restored when needed."""
+    if not isinstance(config_value, dict):
+        return copy.deepcopy(DEFAULT_CONFIG)
+    return merge_configs(DEFAULT_CONFIG, config_value)
+
+
 def merge_configs(default: Dict, override: Dict) -> Dict:
     """Deep merge override into default config."""
     result = copy.deepcopy(default)
@@ -309,6 +316,54 @@ def display_status_board_enabled(display: Dict[str, Any]) -> bool:
     if "show_status_board" in display:
         return config_bool(display.get("show_status_board"), False)
     return config_bool(display.get("show_vibe_board"), True)
+
+
+def settings_config_from_params(params: Dict[str, list], base_config: Dict[str, Any]) -> Dict[str, Any]:
+    """Build a validated config update from settings form parameters."""
+    updated = clean_config(base_config)
+
+    # Update server settings
+    if "port" in params:
+        updated["server"]["port"] = int(params["port"][0])
+    if "host" in params:
+        updated["server"]["host"] = params["host"][0]
+
+    # Update refresh settings
+    if "refresh_interval" in params:
+        interval = int(params["refresh_interval"][0])
+        updated["refresh"]["interval_seconds"] = max(30, min(3600, interval))
+    if "refresh_page" in params:
+        page_refresh = int(params["refresh_page"][0])
+        updated["refresh"]["auto_refresh_page_ms"] = max(30, min(3600, page_refresh)) * 1000
+
+    # Update Codex settings
+    updated["codex"]["enabled"] = "codex_enabled" in params
+    if "codex_source" in params:
+        updated["codex"]["source"] = params["codex_source"][0]
+    if "session_limit" in params:
+        limit = int(params["session_limit"][0])
+        updated["codex"]["session_file_limit"] = max(1, min(100, limit))
+
+    # Update status board settings
+    if "stale_after_seconds" in params:
+        stale_after = int(params["stale_after_seconds"][0])
+        updated["status"]["stale_after_seconds"] = max(60, min(86400, stale_after))
+        updated.pop("vibe", None)
+
+    # Update display settings
+    updated["display"]["show_plan_type"] = "show_plan_type" in params
+    updated["display"]["show_credits"] = "show_credits" in params
+    updated["display"]["show_data_source"] = "show_data_source" in params
+    updated["display"]["show_last_updated"] = "show_last_updated" in params
+    show_status_board = "show_status_board" in params or "show_vibe_board" in params
+    updated["display"]["show_status_board"] = show_status_board
+    updated["display"].pop("show_vibe_board", None)
+    if "layout_mode" in params:
+        updated["display"]["layout_mode"] = normalize_layout_mode(params["layout_mode"][0])
+    if "text_scale_percent" in params:
+        updated["display"]["text_scale_percent"] = normalize_text_scale(params["text_scale_percent"][0])
+
+    return updated
 
 
 # Global config
@@ -2485,51 +2540,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                 content_length = safe_content_length(self.headers.get("Content-Length"))
                 post_data = decode_request_body(self.rfile.read(content_length))
                 params = parse_qs(post_data)
-
-                # Update server settings
-                if "port" in params:
-                    config["server"]["port"] = int(params["port"][0])
-                if "host" in params:
-                    config["server"]["host"] = params["host"][0]
-                
-                # Update refresh settings
-                if "refresh_interval" in params:
-                    interval = int(params["refresh_interval"][0])
-                    config["refresh"]["interval_seconds"] = max(30, min(3600, interval))
-                if "refresh_page" in params:
-                    page_refresh = int(params["refresh_page"][0])
-                    config["refresh"]["auto_refresh_page_ms"] = max(30, min(3600, page_refresh)) * 1000
-                
-                # Update codex settings
-                config["codex"]["enabled"] = "codex_enabled" in params
-                if "codex_source" in params:
-                    config["codex"]["source"] = params["codex_source"][0]
-                if "session_limit" in params:
-                    limit = int(params["session_limit"][0])
-                    config["codex"]["session_file_limit"] = max(1, min(100, limit))
-
-                # Update status board settings
-                config.setdefault("status", {})
-                if "stale_after_seconds" in params:
-                    stale_after = int(params["stale_after_seconds"][0])
-                    config["status"]["stale_after_seconds"] = max(60, min(86400, stale_after))
-                    config.pop("vibe", None)
-                
-                # Update display settings
-                config["display"]["show_plan_type"] = "show_plan_type" in params
-                config["display"]["show_credits"] = "show_credits" in params
-                config["display"]["show_data_source"] = "show_data_source" in params
-                config["display"]["show_last_updated"] = "show_last_updated" in params
-                show_status_board = "show_status_board" in params or "show_vibe_board" in params
-                config["display"]["show_status_board"] = show_status_board
-                config["display"].pop("show_vibe_board", None)
-                if "layout_mode" in params:
-                    config["display"]["layout_mode"] = normalize_layout_mode(params["layout_mode"][0])
-                if "text_scale_percent" in params:
-                    config["display"]["text_scale_percent"] = normalize_text_scale(params["text_scale_percent"][0])
+                updated_config = settings_config_from_params(params, config)
                 
                 # Save config
-                if save_config(config):
+                if save_config(updated_config):
+                    config.clear()
+                    config.update(updated_config)
                     logger.info("Settings saved successfully")
                     html = generate_settings_html("设置已保存。", "success")
                 else:
