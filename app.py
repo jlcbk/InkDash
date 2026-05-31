@@ -672,6 +672,13 @@ def default_local_token_usage() -> Dict[str, Any]:
     }
 
 
+def token_count_value(value: Any) -> int:
+    """Return a non-negative token count from a session usage value."""
+    if not isinstance(value, (int, float)):
+        return 0
+    return max(0, int(value))
+
+
 def parse_codex_timestamp(value: Any) -> Optional[datetime]:
     if not value:
         return None
@@ -687,9 +694,7 @@ def parse_codex_timestamp(value: Any) -> Optional[datetime]:
 
 def add_token_usage(window: Dict[str, Any], usage: Dict[str, Any], event_time: datetime, session_id: str):
     for field in TOKEN_USAGE_FIELDS:
-        value = usage.get(field, 0)
-        if isinstance(value, (int, float)):
-            window[field] += int(value)
+        window[field] += token_count_value(usage.get(field, 0))
     window["event_count"] += 1
     window.setdefault("_sessions", set()).add(session_id)
 

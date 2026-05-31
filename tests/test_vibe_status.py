@@ -592,6 +592,39 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(window_7d["event_count"], 2)
         self.assertEqual(window_7d["session_count"], 2)
 
+    def test_compute_local_token_usage_clamps_negative_token_counts(self):
+        codex_home = Path(self.tmpdir.name) / ".codex"
+        session_dir = codex_home / "sessions"
+        session_dir.mkdir(parents=True)
+        now = datetime(2026, 5, 29, 10, 0, 0, tzinfo=timezone.utc)
+        session_file = session_dir / "negative.jsonl"
+        event = {
+            "timestamp": (now - timedelta(hours=1)).isoformat().replace("+00:00", "Z"),
+            "type": "event_msg",
+            "payload": {
+                "type": "token_count",
+                "info": {
+                    "last_token_usage": {
+                        "input_tokens": -100,
+                        "cached_input_tokens": -50,
+                        "output_tokens": 20,
+                        "reasoning_output_tokens": -5,
+                        "total_tokens": -80,
+                    },
+                },
+            },
+        }
+        session_file.write_text(json.dumps(event) + "\n", encoding="utf-8")
+
+        usage = app.compute_local_token_usage(codex_home=codex_home, now=now)
+        window_24h = usage["windows"]["24h"]
+
+        self.assertEqual(window_24h["input_tokens"], 0)
+        self.assertEqual(window_24h["cached_input_tokens"], 0)
+        self.assertEqual(window_24h["output_tokens"], 20)
+        self.assertEqual(window_24h["reasoning_output_tokens"], 0)
+        self.assertEqual(window_24h["total_tokens"], 0)
+
     def test_compute_local_token_usage_respects_session_file_limit(self):
         codex_home = Path(self.tmpdir.name) / ".codex"
         session_dir = codex_home / "sessions"
@@ -757,6 +790,12 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(app.percent_left_from_used(-10), 100)
         self.assertEqual(app.percent_left_from_used(999), 0)
         self.assertIsNone(app.percent_left_from_used("bad-value"))
+
+    def test_token_count_value_clamps_negative_and_rejects_non_numeric_values(self):
+        self.assertEqual(app.token_count_value(42), 42)
+        self.assertEqual(app.token_count_value(3.8), 3)
+        self.assertEqual(app.token_count_value(-5), 0)
+        self.assertEqual(app.token_count_value("5"), 0)
 
     def test_dict_or_empty_rejects_non_object_values(self):
         payload = {"ok": True}
