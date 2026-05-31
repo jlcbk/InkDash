@@ -483,7 +483,11 @@ def _load_vibe_status_unlocked() -> Dict[str, Any]:
             continue
         try:
             with open(status_file, "r", encoding="utf-8") as f:
-                return normalize_vibe_status(json.load(f))
+                raw_status = json.load(f)
+            if not isinstance(raw_status, dict):
+                logger.warning(f"Failed to load vibe status from {status_file}: expected JSON object")
+                continue
+            return normalize_vibe_status(raw_status)
         except Exception as e:
             logger.warning(f"Failed to load vibe status from {status_file}: {e}")
     return default_vibe_status()
