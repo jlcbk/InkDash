@@ -38,7 +38,7 @@ def is_status_stale(
 
     current_time = now or datetime.now()
     age_seconds = (current_time - updated_at).total_seconds()
-    return age_seconds > stale_after_seconds
+    return age_seconds < 0 or age_seconds > stale_after_seconds
 
 
 def default_status() -> Dict[str, Any]:

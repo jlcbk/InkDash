@@ -55,6 +55,14 @@ class StatusModelTests(unittest.TestCase):
         self.assertTrue(status_model.is_status_stale(status, 60))
         self.assertFalse(status_model.is_status_stale(status, 300))
 
+    def test_is_status_stale_treats_future_time_as_untrusted(self):
+        now = datetime(2026, 5, 29, 10, 0, 0)
+        future_status = {
+            "updated_at": (now + timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        self.assertTrue(status_model.is_status_stale(future_status, 900, now=now))
+
 
 if __name__ == "__main__":
     unittest.main()
