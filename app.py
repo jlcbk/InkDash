@@ -488,6 +488,15 @@ def codex_session_file_limit(value: Any = None) -> int:
     return max(1, min(100, limit))
 
 
+def percent_left_from_used(value: Any) -> Optional[int]:
+    """Convert a used percentage into a clamped remaining percentage."""
+    try:
+        used_percent = int(value)
+    except (TypeError, ValueError):
+        return None
+    return max(0, min(100, 100 - used_percent))
+
+
 def vibe_stale_after_seconds() -> int:
     """Compatibility wrapper for the old status freshness helper name."""
     return status_stale_after_seconds()
@@ -930,8 +939,9 @@ def fetch_codex_status_cli() -> CodexUsage:
         # Parse primary (5h limit)
         primary = rate_limits.get("primary", {})
         if primary:
-            used_percent = primary.get("usedPercent", 0)
-            usage.five_hour_percent_left = 100 - int(used_percent)
+            percent_left = percent_left_from_used(primary.get("usedPercent", 0))
+            if percent_left is not None:
+                usage.five_hour_percent_left = percent_left
             
             resets_at = primary.get("resetsAt")
             if resets_at:
@@ -941,8 +951,9 @@ def fetch_codex_status_cli() -> CodexUsage:
         # Parse secondary (weekly limit)
         secondary = rate_limits.get("secondary", {})
         if secondary:
-            used_percent = secondary.get("usedPercent", 0)
-            usage.weekly_percent_left = 100 - int(used_percent)
+            percent_left = percent_left_from_used(secondary.get("usedPercent", 0))
+            if percent_left is not None:
+                usage.weekly_percent_left = percent_left
             
             resets_at = secondary.get("resetsAt")
             if resets_at:
@@ -1026,11 +1037,14 @@ def fetch_codex_status_session() -> CodexUsage:
                     if not primary.get("window_minutes") and not secondary.get("window_minutes"):
                         continue
 
-                    try:
-                        usage.five_hour_percent_left = 100 - int(primary.get("used_percent", 0))
-                        usage.weekly_percent_left = 100 - int(secondary.get("used_percent", 0))
-                    except (TypeError, ValueError):
+                    primary_left = percent_left_from_used(primary.get("used_percent", 0)) if primary else None
+                    secondary_left = percent_left_from_used(secondary.get("used_percent", 0)) if secondary else None
+                    if primary_left is None and secondary_left is None:
                         continue
+                    if primary_left is not None:
+                        usage.five_hour_percent_left = primary_left
+                    if secondary_left is not None:
+                        usage.weekly_percent_left = secondary_left
 
                     if primary.get("resets_at"):
                         try:

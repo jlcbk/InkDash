@@ -703,6 +703,35 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(usage.weekly_percent_left, 60)
         self.assertEqual(usage.plan_type, "Pro")
 
+    def test_fetch_codex_status_session_clamps_out_of_range_percentages(self):
+        home = Path(self.tmpdir.name) / "home"
+        session_dir = home / ".codex" / "sessions"
+        session_dir.mkdir(parents=True)
+        session_file = session_dir / "limits.jsonl"
+        event = {
+            "type": "event_msg",
+            "payload": {
+                "type": "token_count",
+                "rate_limits": {
+                    "primary": {
+                        "window_minutes": 300,
+                        "used_percent": -20,
+                    },
+                    "secondary": {
+                        "window_minutes": 10080,
+                        "used_percent": 150,
+                    },
+                },
+            },
+        }
+        session_file.write_text(json.dumps(event) + "\n", encoding="utf-8")
+
+        with patch.dict(os.environ, {"HOME": str(home)}):
+            usage = app.fetch_codex_status_session()
+
+        self.assertEqual(usage.five_hour_percent_left, 100)
+        self.assertEqual(usage.weekly_percent_left, 0)
+
     def test_recent_session_files_skips_broken_symlink(self):
         session_dir = Path(self.tmpdir.name) / "sessions"
         session_dir.mkdir()
@@ -722,6 +751,12 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(app.codex_session_file_limit("bad-value"), 10)
         self.assertEqual(app.codex_session_file_limit(0), 1)
         self.assertEqual(app.codex_session_file_limit(999), 100)
+
+    def test_percent_left_from_used_clamps_and_rejects_invalid_values(self):
+        self.assertEqual(app.percent_left_from_used(25), 75)
+        self.assertEqual(app.percent_left_from_used(-10), 100)
+        self.assertEqual(app.percent_left_from_used(999), 0)
+        self.assertIsNone(app.percent_left_from_used("bad-value"))
 
     def test_main_html_has_grid_supports_fallback(self):
         html = app.generate_main_html(
