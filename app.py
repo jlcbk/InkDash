@@ -412,13 +412,20 @@ config = load_config()
 
 def configured_api_token() -> str:
     """Return the optional API write token."""
-    return str(config.get("security", {}).get("api_token", "")).strip()
+    security = config.get("security", {})
+    if not isinstance(security, dict):
+        return ""
+    return str(security.get("api_token", "")).strip()
 
 
 def public_config() -> Dict[str, Any]:
     """Return configuration safe to expose through the read-only config API."""
     safe_config = copy.deepcopy(config)
-    token = str(safe_config.get("security", {}).get("api_token", "")).strip()
+    security = safe_config.get("security", {})
+    if not isinstance(security, dict):
+        safe_config["security"] = {}
+        return safe_config
+    token = str(security.get("api_token", "")).strip()
     if token:
         safe_config.setdefault("security", {})["api_token"] = "<configured>"
     return safe_config
