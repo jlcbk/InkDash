@@ -720,6 +720,21 @@ class VibeStatusTests(unittest.TestCase):
         self.assertIn("&lt;script&gt;", html)
         self.assertNotIn("<script>alert", html)
 
+    def test_settings_page_clamps_invalid_session_limit_value(self):
+        original_config = app.config
+        try:
+            app.config = app.merge_configs(app.DEFAULT_CONFIG, {
+                "codex": {
+                    "session_file_limit": '"><script>alert(1)</script>',
+                },
+            })
+            html = app.generate_settings_html()
+        finally:
+            app.config = original_config
+
+        self.assertIn('name="session_limit" value="10"', html)
+        self.assertNotIn("<script>", html)
+
     def test_load_vibe_status_falls_back_to_legacy_file(self):
         legacy = Path(self.tmpdir.name) / "vibe_status.json"
         new_file = Path(self.tmpdir.name) / "inkdash_status.json"

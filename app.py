@@ -2079,7 +2079,7 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
     # Codex settings
     codex_enabled = codex_enabled_flag()
     codex_source = config.get("codex", {}).get("source", "auto")
-    session_limit = config.get("codex", {}).get("session_file_limit", 10)
+    session_limit = codex_session_file_limit()
     
     # Display settings
     display = config.get("display", {})
