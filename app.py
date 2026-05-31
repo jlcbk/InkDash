@@ -6,6 +6,7 @@ InkDash: Dashboard for Codex usage and collaboration status on e-ink devices.
 import argparse
 import copy
 import hmac
+import os
 import re
 import subprocess
 import json
@@ -153,13 +154,30 @@ def load_config() -> Dict[str, Any]:
 def save_config(config: Dict[str, Any]) -> bool:
     """Save configuration to file."""
     try:
-        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-            json.dump(config, f, indent=2, ensure_ascii=False)
+        write_json_atomic(CONFIG_FILE, config)
         logger.info(f"Configuration saved to {CONFIG_FILE}")
         return True
     except Exception as e:
         logger.error(f"Failed to save config: {e}")
         return False
+
+
+def write_json_atomic(path: Path, payload: Any):
+    """Write JSON via same-directory temp file, then atomically replace target."""
+    tmp_path = path.with_name(f".{path.name}.tmp")
+    try:
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, ensure_ascii=False)
+            f.write("\n")
+            f.flush()
+            os.fsync(f.fileno())
+        tmp_path.replace(path)
+    except Exception:
+        try:
+            tmp_path.unlink()
+        except OSError:
+            pass
+        raise
 
 
 def clean_config(config_value: Dict[str, Any]) -> Dict[str, Any]:
@@ -481,8 +499,7 @@ def _save_vibe_status_unlocked(status: Dict[str, Any]) -> bool:
     """Persist status while the caller owns status_lock."""
     try:
         normalized = normalize_vibe_status(status)
-        with open(STATUS_FILE, "w", encoding="utf-8") as f:
-            json.dump(normalized, f, indent=2, ensure_ascii=False)
+        write_json_atomic(STATUS_FILE, normalized)
         return True
     except Exception as e:
         logger.error(f"Failed to save vibe status: {e}")
