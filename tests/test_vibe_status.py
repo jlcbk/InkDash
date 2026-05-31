@@ -361,6 +361,36 @@ class VibeStatusTests(unittest.TestCase):
         self.assertIn("InkDash", main_html)
         self.assertIn("设置", settings_html)
 
+    def test_runtime_helpers_tolerate_invalid_config_sections(self):
+        original_config = app.config
+        try:
+            app.config = {
+                "server": "bad-server",
+                "refresh": "bad-refresh",
+                "display": "bad-display",
+                "codex": "bad-codex",
+                "status": "bad-status",
+                "vibe": "bad-vibe",
+            }
+
+            self.assertEqual(app.server_port_number(), 8080)
+            self.assertEqual(app.server_host_value(), "0.0.0.0")
+            self.assertEqual(app.refresh_interval_seconds(), 300)
+            self.assertEqual(app.page_refresh_seconds(), 300)
+            self.assertEqual(app.current_layout_mode(), "auto")
+            self.assertEqual(app.current_text_scale(), app.TEXT_SCALE_DEFAULT)
+            self.assertTrue(app.codex_enabled_flag())
+            self.assertEqual(app.codex_session_file_limit(), 10)
+            self.assertEqual(app.status_stale_after_seconds(), 900)
+
+            main_html = app.generate_main_html(app.CodexUsage(), app.default_vibe_status())
+            settings_html = app.generate_settings_html()
+        finally:
+            app.config = original_config
+
+        self.assertIn("InkDash", main_html)
+        self.assertIn("设置", settings_html)
+
     def test_settings_config_from_params_does_not_mutate_base_on_error(self):
         base_config = app.merge_configs(app.DEFAULT_CONFIG, {
             "server": {"port": 8080},

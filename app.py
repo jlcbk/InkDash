@@ -221,7 +221,7 @@ def normalize_layout_mode(value: Any) -> str:
 
 def current_layout_mode() -> str:
     """Return the configured dashboard layout mode."""
-    return normalize_layout_mode(config.get("display", {}).get("layout_mode", "auto"))
+    return normalize_layout_mode(config_section("display").get("layout_mode", "auto"))
 
 
 def normalize_text_scale(value: Any) -> int:
@@ -245,14 +245,14 @@ def clamp_int_range(value: Any, default: int, minimum: int, maximum: int) -> int
 def refresh_interval_seconds(value: Any = None) -> int:
     """Return a safe background refresh interval in seconds."""
     if value is None:
-        value = config.get("refresh", {}).get("interval_seconds", 300)
+        value = config_section("refresh").get("interval_seconds", 300)
     return clamp_int_range(value, 300, 30, 3600)
 
 
 def page_refresh_seconds(value: Any = None) -> int:
     """Return a safe browser refresh interval in seconds."""
     if value is None:
-        value = config.get("refresh", {}).get("auto_refresh_page_ms", 300000)
+        value = config_section("refresh").get("auto_refresh_page_ms", 300000)
     try:
         seconds = int(value) // 1000
     except (TypeError, ValueError, OverflowError):
@@ -263,14 +263,14 @@ def page_refresh_seconds(value: Any = None) -> int:
 def server_port_number(value: Any = None) -> int:
     """Return a safe server port number."""
     if value is None:
-        value = config.get("server", {}).get("port", 8080)
+        value = config_section("server").get("port", 8080)
     return clamp_int_range(value, 8080, 1, 65535)
 
 
 def server_host_value(value: Any = None) -> str:
     """Return a non-empty server host string."""
     if value is None:
-        value = config.get("server", {}).get("host", "0.0.0.0")
+        value = config_section("server").get("host", "0.0.0.0")
     host = str(value or "").strip()
     return host if host else "0.0.0.0"
 
@@ -278,7 +278,7 @@ def server_host_value(value: Any = None) -> str:
 def current_text_scale() -> int:
     """Return the configured dashboard text scale percentage."""
     return normalize_text_scale(
-        config.get("display", {}).get("text_scale_percent", TEXT_SCALE_DEFAULT)
+        config_section("display").get("text_scale_percent", TEXT_SCALE_DEFAULT)
     )
 
 
@@ -302,8 +302,16 @@ def config_bool(value: Any, default: bool = False) -> bool:
     return default
 
 
+def config_section(name: str) -> Dict[str, Any]:
+    """Return a config section dictionary, ignoring malformed runtime values."""
+    section = config.get(name, {})
+    return section if isinstance(section, dict) else {}
+
+
 def display_flag(display: Dict[str, Any], key: str) -> bool:
     """Return a display flag using DEFAULT_CONFIG as the fallback source."""
+    if not isinstance(display, dict):
+        display = {}
     return config_bool(
         display.get(key),
         bool(DEFAULT_CONFIG.get("display", {}).get(key, False)),
@@ -313,7 +321,7 @@ def display_flag(display: Dict[str, Any], key: str) -> bool:
 def codex_enabled_flag(value: Any = None) -> bool:
     """Return whether Codex usage fetching is enabled."""
     if value is None:
-        value = config.get("codex", {}).get("enabled", True)
+        value = config_section("codex").get("enabled", True)
     return config_bool(value, True)
 
 
@@ -349,6 +357,8 @@ def parse_request_target(value: str):
 
 def display_status_board_enabled(display: Dict[str, Any]) -> bool:
     """Return the status-board display flag, accepting the legacy key."""
+    if not isinstance(display, dict):
+        display = {}
     if "show_status_board" in display:
         return config_bool(display.get("show_status_board"), False)
     return config_bool(display.get("show_vibe_board"), True)
@@ -486,9 +496,9 @@ def redact_sensitive_request_line(request_line: str) -> str:
 
 def status_stale_after_seconds() -> int:
     """Return the heartbeat freshness threshold."""
-    value = config.get("status", {}).get("stale_after_seconds")
+    value = config_section("status").get("stale_after_seconds")
     if value is None:
-        value = config.get("vibe", {}).get("stale_after_seconds", 900)
+        value = config_section("vibe").get("stale_after_seconds", 900)
     try:
         return max(60, int(value))
     except (TypeError, ValueError, OverflowError):
@@ -498,7 +508,7 @@ def status_stale_after_seconds() -> int:
 def codex_session_file_limit(value: Any = None) -> int:
     """Return a safe limit for recent Codex session files to scan."""
     if value is None:
-        value = config.get("codex", {}).get("session_file_limit", 10)
+        value = config_section("codex").get("session_file_limit", 10)
     try:
         limit = int(value)
     except (TypeError, ValueError, OverflowError):
@@ -1109,7 +1119,7 @@ def fetch_codex_usage() -> CodexUsage:
         usage.error = "Codex 监控已关闭"
         return attach_local_token_usage(usage)
 
-    source = config.get("codex", {}).get("source", "auto")
+    source = config_section("codex").get("source", "auto")
     
     if source == "session":
         return attach_local_token_usage(fetch_codex_status_session())
@@ -1254,7 +1264,7 @@ def generate_main_html(
     text_scale_options = sorted(set(TEXT_SCALE_QUICK_VALUES + (text_scale_percent,)))
     text_scale_switch = "".join(text_scale_link(scale) for scale in text_scale_options)
 
-    display = config.get("display", {})
+    display = config_section("display")
 
     vibe_board = ""
     if display_status_board_enabled(display):
@@ -2139,11 +2149,11 @@ def generate_settings_html(message: str = "", message_type: str = "") -> str:
     
     # Codex settings
     codex_enabled = codex_enabled_flag()
-    codex_source = config.get("codex", {}).get("source", "auto")
+    codex_source = config_section("codex").get("source", "auto")
     session_limit = codex_session_file_limit()
     
     # Display settings
-    display = config.get("display", {})
+    display = config_section("display")
     show_credits = display_flag(display, "show_credits")
     show_plan = display_flag(display, "show_plan_type")
     show_source = display_flag(display, "show_data_source")
