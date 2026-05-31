@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 import sys
@@ -342,6 +343,54 @@ class VibeStatusTests(unittest.TestCase):
 
         self.assertIn("InkDash", main_html)
         self.assertIn("设置", settings_html)
+
+    def test_settings_config_from_params_does_not_mutate_base_on_error(self):
+        base_config = app.merge_configs(app.DEFAULT_CONFIG, {
+            "server": {"port": 8080},
+            "refresh": {"interval_seconds": 300},
+        })
+        original = copy.deepcopy(base_config)
+
+        with self.assertRaises(ValueError):
+            app.settings_config_from_params({
+                "port": ["9090"],
+                "refresh_interval": ["bad-value"],
+            }, base_config)
+
+        self.assertEqual(base_config, original)
+
+    def test_settings_config_from_params_returns_validated_copy(self):
+        base_config = app.merge_configs(app.DEFAULT_CONFIG, {
+            "server": {"port": 8080},
+            "display": {"show_credits": False},
+        })
+
+        updated = app.settings_config_from_params({
+            "port": ["9090"],
+            "host": ["127.0.0.1"],
+            "refresh_interval": ["5"],
+            "refresh_page": ["99999"],
+            "codex_enabled": ["on"],
+            "codex_source": ["session"],
+            "session_limit": ["999"],
+            "stale_after_seconds": ["30"],
+            "show_credits": ["on"],
+            "layout_mode": ["landscape"],
+            "text_scale_percent": ["999"],
+        }, base_config)
+
+        self.assertEqual(base_config["server"]["port"], 8080)
+        self.assertEqual(updated["server"]["port"], 9090)
+        self.assertEqual(updated["server"]["host"], "127.0.0.1")
+        self.assertEqual(updated["refresh"]["interval_seconds"], 30)
+        self.assertEqual(updated["refresh"]["auto_refresh_page_ms"], 3600 * 1000)
+        self.assertTrue(updated["codex"]["enabled"])
+        self.assertEqual(updated["codex"]["source"], "session")
+        self.assertEqual(updated["codex"]["session_file_limit"], 100)
+        self.assertEqual(updated["status"]["stale_after_seconds"], 60)
+        self.assertTrue(updated["display"]["show_credits"])
+        self.assertEqual(updated["display"]["layout_mode"], "landscape")
+        self.assertEqual(updated["display"]["text_scale_percent"], app.TEXT_SCALE_MAX)
 
     def test_load_config_default_result_does_not_share_nested_defaults(self):
         original_config_file = app.CONFIG_FILE
