@@ -625,6 +625,34 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(window_24h["reasoning_output_tokens"], 0)
         self.assertEqual(window_24h["total_tokens"], 0)
 
+    def test_compute_local_token_usage_clamps_cache_hit_percent(self):
+        codex_home = Path(self.tmpdir.name) / ".codex"
+        session_dir = codex_home / "sessions"
+        session_dir.mkdir(parents=True)
+        now = datetime(2026, 5, 29, 10, 0, 0, tzinfo=timezone.utc)
+        session_file = session_dir / "cache.jsonl"
+        event = {
+            "timestamp": (now - timedelta(hours=1)).isoformat().replace("+00:00", "Z"),
+            "type": "event_msg",
+            "payload": {
+                "type": "token_count",
+                "info": {
+                    "last_token_usage": {
+                        "input_tokens": 10,
+                        "cached_input_tokens": 25,
+                        "output_tokens": 0,
+                        "reasoning_output_tokens": 0,
+                        "total_tokens": 10,
+                    },
+                },
+            },
+        }
+        session_file.write_text(json.dumps(event) + "\n", encoding="utf-8")
+
+        usage = app.compute_local_token_usage(codex_home=codex_home, now=now)
+
+        self.assertEqual(usage["windows"]["24h"]["cache_hit_percent"], 100.0)
+
     def test_compute_local_token_usage_respects_session_file_limit(self):
         codex_home = Path(self.tmpdir.name) / ".codex"
         session_dir = codex_home / "sessions"

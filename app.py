@@ -711,7 +711,8 @@ def finalize_token_window(window: Dict[str, Any]):
     input_tokens = window.get("input_tokens", 0)
     cached_tokens = window.get("cached_input_tokens", 0)
     if input_tokens > 0:
-        window["cache_hit_percent"] = round(cached_tokens * 100 / input_tokens, 1)
+        cache_hit_percent = cached_tokens * 100 / input_tokens
+        window["cache_hit_percent"] = round(max(0, min(100, cache_hit_percent)), 1)
 
 
 def recent_session_files(session_dirs: list, limit: int) -> list:
