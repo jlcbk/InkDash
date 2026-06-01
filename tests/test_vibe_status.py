@@ -461,6 +461,12 @@ class VibeStatusTests(unittest.TestCase):
         self.assertEqual(updated["server"]["port"], 65535)
         self.assertEqual(updated["server"]["host"], "0.0.0.0")
 
+    def test_server_host_value_rejects_non_string_values(self):
+        self.assertEqual(app.server_host_value(["127.0.0.1"]), "0.0.0.0")
+        self.assertEqual(app.server_host_value({"host": "127.0.0.1"}), "0.0.0.0")
+        self.assertEqual(app.server_host_value(127001), "0.0.0.0")
+        self.assertEqual(app.server_host_value(" 127.0.0.1 "), "127.0.0.1")
+
     def test_parse_settings_form_keeps_blank_host_for_normalization(self):
         base_config = app.merge_configs(app.DEFAULT_CONFIG, {
             "server": {"port": 8080, "host": "127.0.0.1"},
