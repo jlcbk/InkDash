@@ -271,6 +271,8 @@ def server_host_value(value: Any = None) -> str:
     """Return a non-empty server host string."""
     if value is None:
         value = config_section("server").get("host", "0.0.0.0")
+    if not isinstance(value, str):
+        return "0.0.0.0"
     host = str(value or "").strip()
     return host if host else "0.0.0.0"
 
