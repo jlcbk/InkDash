@@ -31,7 +31,7 @@ python3 app.py
 指定端口和监听地址：
 
 ```bash
-python3 app.py --host 0.0.0.0 --port 9090
+python3 app.py --host 0.0.0.0 --port 8080
 ```
 
 启动后，在 Kindle 浏览器打开：
