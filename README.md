@@ -19,7 +19,7 @@ InkDash（墨板）是一个面向电子墨水屏浏览器（Kindle 等）的常
 
 ## 环境要求
 
-- Python 3.7 或更高版本。
+- Python 3.11 或更高版本（与 `.github/workflows/ci.yml` 的 CI 矩阵保持一致）。
 - 如需 Codex 用量：本机已安装并登录 Codex CLI。
 
 ## 快速开始
